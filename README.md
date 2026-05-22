@@ -1,4 +1,4 @@
-# 💈 Barbearia Imperial - Sistema SaaS Premium
+# 💈 Barbearia Flores - Sistema SaaS Premium
 
 Este é um sistema web completo, moderno e de altíssimo nível para barbearias de alto padrão. Projetado especificamente para ser vendido como um serviço mensal (SaaS), o projeto foca em alta conversão de clientes, animações cinematográficas fluidas, excelente performance móvel e administração de dados em tempo real.
 
