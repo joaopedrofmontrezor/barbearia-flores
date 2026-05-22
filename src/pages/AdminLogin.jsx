@@ -53,7 +53,11 @@ const AdminLogin = () => {
           <div>
             <p className="font-semibold mb-1 uppercase tracking-wider">Modo de Demonstração Ativo</p>
             <p>Se as credenciais do Firebase não forem configuradas no .env, você pode entrar usando:</p>
+<<<<<<< HEAD
             <p className="mt-1 font-mono text-white">E-mail: admin@barbeariaflores.com</p>
+=======
+            <p className="mt-1 font-mono text-white">E-mail: admin@barbeariapremium.com</p>
+>>>>>>> f77f807e37044f4ab56670bebdd643d55c698556
             <p className="font-mono text-white">Senha: admin123</p>
           </div>
         </div>
@@ -74,7 +78,11 @@ const AdminLogin = () => {
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-500" />
               <input
                 type="email"
+<<<<<<< HEAD
                 placeholder="admin@barbeariaflores.com"
+=======
+                placeholder="admin@barbeariapremium.com"
+>>>>>>> f77f807e37044f4ab56670bebdd643d55c698556
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full pl-10 pr-4 py-3 bg-dark-900 border border-dark-700 rounded-lg text-white placeholder-dark-500 focus:outline-none focus:border-gold transition-colors text-sm"

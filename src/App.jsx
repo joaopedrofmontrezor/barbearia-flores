@@ -15,7 +15,11 @@ const PremiumLoader = () => (
       <div className="absolute inset-0 border-4 border-dark-800 rounded-full"></div>
       <div className="absolute inset-0 border-4 border-gold rounded-full animate-spin border-t-transparent"></div>
     </div>
+<<<<<<< HEAD
     <h2 className="mt-6 text-gold font-title tracking-widest text-lg animate-pulse uppercase">Barbearia Flores</h2>
+=======
+    <h2 className="mt-6 text-gold font-title tracking-widest text-lg animate-pulse uppercase">Barbearia Premium</h2>
+>>>>>>> f77f807e37044f4ab56670bebdd643d55c698556
     <p className="text-dark-500 text-sm mt-2">Carregando experiência...</p>
   </div>
 );

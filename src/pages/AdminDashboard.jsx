@@ -295,7 +295,11 @@ const AdminDashboard = () => {
           <div className="p-6 border-b border-dark-800 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Scissors className="w-6 h-6 text-gold" />
+<<<<<<< HEAD
               <span className="font-title font-bold text-lg tracking-wider text-gold">Flores Admin</span>
+=======
+              <span className="font-title font-bold text-lg tracking-wider text-gold">Premium Admin</span>
+>>>>>>> f77f807e37044f4ab56670bebdd643d55c698556
             </div>
           </div>
 
@@ -685,7 +689,11 @@ const AdminDashboard = () => {
                         <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-500" />
                         <input
                           type="email"
+<<<<<<< HEAD
                           placeholder="contato@barbeariaflores.com"
+=======
+                          placeholder="contato@barbeariapremium.com"
+>>>>>>> f77f807e37044f4ab56670bebdd643d55c698556
                           value={settings.email}
                           onChange={(e) => setSettings({ ...settings, email: e.target.value })}
                           className="w-full pl-10 pr-4 py-3 bg-dark-900 border border-dark-700 rounded-lg text-white placeholder-dark-500 focus:outline-none focus:border-gold transition-colors text-sm"

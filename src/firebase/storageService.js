@@ -37,15 +37,19 @@ export const uploadMedia = async (file, path = 'uploads') => {
 
   // Real Firebase Storage upload
   try {
+<<<<<<< HEAD
     if (!storage) {
       throw new Error("Serviço de Storage não inicializado.");
     }
+=======
+>>>>>>> f77f807e37044f4ab56670bebdd643d55c698556
     const filename = `${Date.now()}_${file.name}`;
     const storageRef = ref(storage, `${path}/${filename}`);
     const snapshot = await uploadBytes(storageRef, file);
     const downloadURL = await getDownloadURL(snapshot.ref);
     return downloadURL;
   } catch (error) {
+<<<<<<< HEAD
     console.warn("Firebase Storage desativado ou com erro. Usando fallback inteligente (Base64/Imagens Padrão):", error);
     
     return new Promise((resolve) => {
@@ -67,5 +71,9 @@ export const uploadMedia = async (file, path = 'uploads') => {
         resolve(CATEGORY_IMAGES[cat] || CATEGORY_IMAGES.default);
       }
     });
+=======
+    console.error("Erro no upload do Firebase Storage:", error);
+    throw error;
+>>>>>>> f77f807e37044f4ab56670bebdd643d55c698556
   }
 };

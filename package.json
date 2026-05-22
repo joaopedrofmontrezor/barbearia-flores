@@ -1,5 +1,9 @@
 {
+<<<<<<< HEAD
   "name": "barbearia-flores",
+=======
+  "name": "barbearia-premium",
+>>>>>>> f77f807e37044f4ab56670bebdd643d55c698556
   "private": true,
   "version": "0.0.0",
   "type": "module",
