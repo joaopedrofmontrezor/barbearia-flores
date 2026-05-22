@@ -10,6 +10,7 @@ import {
   getServices, getEmployees, getTestimonials, 
   getGallery, getSettings, saveBooking 
 } from '../firebase/dbService';
+import { logoutAdmin } from '../firebase/authService';
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -88,6 +89,16 @@ const LandingPage = () => {
   const [contactSuccess, setContactSuccess] = useState(false);
 
   useEffect(() => {
+    // Encerra sessão do administrador ao voltar à página principal
+    const clearAdminSession = async () => {
+      try {
+        await logoutAdmin();
+      } catch (err) {
+        console.error("Erro ao limpar sessão do admin:", err);
+      }
+    };
+    clearAdminSession();
+
     // Load Data
     const loadData = async () => {
       try {

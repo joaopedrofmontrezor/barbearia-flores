@@ -44,17 +44,12 @@ const INITIAL_GALLERY = [
 
 const INITIAL_SETTINGS = {
   phone: '5516994206778',
-<<<<<<< HEAD
+
   email: 'contato@barbeariaflores.com',
   address: 'Avenida Baldan, 1910 - Residencial Benassi, Matão - SP, 15993-000',
   openingHours: 'Seg a Sex: 09h às 21h | Sáb: 09h às 19h',
   whatsappMessageTemplate: 'Olá! Gostaria de confirmar meu agendamento na Barbearia Flores para o dia {data} às {hora} com o profissional {barbeiro} (Serviço: {servico}) na unidade {unidade}.',
-=======
-  email: 'contato@barbeariapremium.com',
-  address: 'Avenida Baldan, 1910 - Residencial Benassi, Matão - SP, 15993-000',
-  openingHours: 'Seg a Sex: 09h às 21h | Sáb: 09h às 19h',
-  whatsappMessageTemplate: 'Olá! Gostaria de confirmar meu agendamento na Barbearia Premium para o dia {data} às {hora} com o profissional {barbeiro} (Serviço: {servico}) na unidade {unidade}.',
->>>>>>> f77f807e37044f4ab56670bebdd643d55c698556
+
   branches: [
     {
       id: 'br1',

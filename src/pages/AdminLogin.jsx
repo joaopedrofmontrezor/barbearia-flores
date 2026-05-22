@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { loginAdmin } from '../firebase/authService';
 import { Scissors, Lock, Mail, Eye, EyeOff, AlertTriangle } from 'lucide-react';
@@ -10,6 +10,24 @@ const AdminLogin = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  
+  // Segurança avançada: Proteção contra força bruta (Brute Force Protection)
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [lockoutTime, setLockoutTime] = useState(0); // em segundos
+
+  // Efeito para decrementar o contador de bloqueio de segurança
+  useEffect(() => {
+    let timer;
+    if (lockoutTime > 0) {
+      timer = setInterval(() => {
+        setLockoutTime((prev) => prev - 1);
+      }, 1000);
+    } else if (lockoutTime === 0 && failedAttempts > 0) {
+      // Opcional: resetar tentativas caso o bloqueio tenha expirado
+      setFailedAttempts(0);
+    }
+    return () => clearInterval(timer);
+  }, [lockoutTime]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -18,14 +36,57 @@ const AdminLogin = () => {
       return;
     }
 
+    // Se estiver no período de bloqueio, impede o submit
+    if (lockoutTime > 0) {
+      setError(`Acesso bloqueado por motivos de segurança. Aguarde mais ${lockoutTime} segundos.`);
+      return;
+    }
+
     setLoading(true);
     setError('');
 
     try {
       await loginAdmin(email, password);
+      setFailedAttempts(0); // Reseta tentativas falhas em caso de sucesso
       navigate('/admin');
     } catch (err) {
-      setError(err.message || 'Erro ao realizar login.');
+      console.error("Erro na tentativa de login do administrador:", err);
+      
+      // Incrementa tentativas malsucedidas
+      const nextAttempts = failedAttempts + 1;
+      setFailedAttempts(nextAttempts);
+
+      // Tratamento de códigos de erro do Firebase Auth para português amigável e seguro
+      const errorCode = err.code || '';
+      let friendlyError = 'Erro ao realizar login.';
+
+      if (errorCode === 'auth/invalid-credential') {
+        friendlyError = 'Senha incorreta ou e-mail inválido. Por favor, verifique suas credenciais.';
+      } else if (errorCode === 'auth/wrong-password') {
+        friendlyError = 'A senha informada está incorreta. Por favor, tente novamente.';
+      } else if (errorCode === 'auth/user-not-found') {
+        friendlyError = 'Nenhum administrador cadastrado com este e-mail.';
+      } else if (errorCode === 'auth/too-many-requests') {
+        friendlyError = 'Conta temporariamente bloqueada devido a muitas tentativas de login malsucedidas. Tente mais tarde.';
+      } else if (errorCode === 'auth/invalid-email') {
+        friendlyError = 'O formato do e-mail inserido é inválido.';
+      } else if (errorCode === 'auth/user-disabled') {
+        friendlyError = 'Esta conta de administrador foi desativada no sistema.';
+      } else if (err.message && err.message.includes('Credenciais de demonstração incorretas')) {
+        // Mensagem customizada do mock do authService
+        friendlyError = 'Credenciais incorretas! A senha informada está errada para o usuário administrador de demonstração.';
+      } else {
+        friendlyError = err.message || friendlyError;
+      }
+
+      // Se atingir 3 tentativas, ativa bloqueio temporário de 30 segundos
+      if (nextAttempts >= 3) {
+        setLockoutTime(30);
+        setError('Muitas tentativas falhas! Acesso bloqueado temporariamente por 30 segundos por motivos de segurança.');
+      } else {
+        const remaining = 3 - nextAttempts;
+        setError(`${friendlyError} (Você tem mais ${remaining} ${remaining === 1 ? 'tentativa restante' : 'tentativas restantes'} antes do bloqueio).`);
+      }
     } finally {
       setLoading(false);
     }
@@ -47,20 +108,6 @@ const AdminLogin = () => {
           <p className="text-dark-500 text-xs mt-1 uppercase tracking-widest">Acesso Restrito</p>
         </div>
 
-        {/* Info Box for Demo */}
-        <div className="mb-6 p-4 rounded-lg bg-gold/5 border border-gold/20 text-xs text-gold/80 flex gap-3">
-          <AlertTriangle className="w-5 h-5 text-gold shrink-0 mt-0.5" />
-          <div>
-            <p className="font-semibold mb-1 uppercase tracking-wider">Modo de Demonstração Ativo</p>
-            <p>Se as credenciais do Firebase não forem configuradas no .env, você pode entrar usando:</p>
-<<<<<<< HEAD
-            <p className="mt-1 font-mono text-white">E-mail: admin@barbeariaflores.com</p>
-=======
-            <p className="mt-1 font-mono text-white">E-mail: admin@barbeariapremium.com</p>
->>>>>>> f77f807e37044f4ab56670bebdd643d55c698556
-            <p className="font-mono text-white">Senha: admin123</p>
-          </div>
-        </div>
 
         {/* Error Alert */}
         {error && (
@@ -78,15 +125,12 @@ const AdminLogin = () => {
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-500" />
               <input
                 type="email"
-<<<<<<< HEAD
                 placeholder="admin@barbeariaflores.com"
-=======
-                placeholder="admin@barbeariapremium.com"
->>>>>>> f77f807e37044f4ab56670bebdd643d55c698556
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full pl-10 pr-4 py-3 bg-dark-900 border border-dark-700 rounded-lg text-white placeholder-dark-500 focus:outline-none focus:border-gold transition-colors text-sm"
                 required
+                disabled={lockoutTime > 0}
               />
             </div>
           </div>
@@ -102,11 +146,13 @@ const AdminLogin = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full pl-10 pr-10 py-3 bg-dark-900 border border-dark-700 rounded-lg text-white placeholder-dark-500 focus:outline-none focus:border-gold transition-colors text-sm"
                 required
+                disabled={lockoutTime > 0}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-dark-500 hover:text-gold transition-colors"
+                disabled={lockoutTime > 0}
               >
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
@@ -115,11 +161,13 @@ const AdminLogin = () => {
 
           <button
             type="submit"
-            disabled={loading}
-            className="w-full py-3.5 mt-2 rounded-lg btn-gold flex items-center justify-center font-bold tracking-wider hover:opacity-90 disabled:opacity-50 disabled:transform-none text-sm transition-all"
+            disabled={loading || lockoutTime > 0}
+            className="w-full py-3.5 mt-2 rounded-lg btn-gold flex items-center justify-center font-bold tracking-wider hover:opacity-90 disabled:opacity-50 disabled:transform-none text-sm transition-all cursor-pointer"
           >
             {loading ? (
               <div className="w-5 h-5 border-2 border-dark-950 border-t-transparent rounded-full animate-spin"></div>
+            ) : lockoutTime > 0 ? (
+              `Bloqueado (${lockoutTime}s)`
             ) : (
               'Entrar no Sistema'
             )}
@@ -130,7 +178,7 @@ const AdminLogin = () => {
         <div className="mt-8 text-center">
           <button 
             onClick={() => navigate('/')} 
-            className="text-xs text-dark-500 hover:text-gold transition-colors uppercase tracking-widest font-semibold"
+            className="text-xs text-dark-500 hover:text-gold transition-colors uppercase tracking-widest font-semibold cursor-pointer"
           >
             Voltar para o site principal
           </button>
