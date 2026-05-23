@@ -11,14 +11,28 @@ import {
   setDoc 
 } from 'firebase/firestore';
 import { db, isMock } from './config';
+import { 
+  getServices as _getServices,
+  createService as _createService,
+  updateService as _updateService,
+  deleteService as _deleteService
+} from '../services/firebase/services';
 
 // --- DATA MOCK INICIAL ---
 const INITIAL_SERVICES = [
-  { id: 's1', name: 'Corte Masculino', price: 60, duration: 45, description: 'Corte clássico ou moderno executado com tesoura e máquina, lavado e finalizado com pomada premium.' },
-  { id: 's2', name: 'Barba Premium', price: 50, duration: 40, description: 'Barboterapia clássica com toalha quente, massagem facial, óleo hidratante e navalha afiada.' },
-  { id: 's3', name: 'Sobrancelha na Navalha', price: 25, duration: 15, description: 'Alinhamento e design de sobrancelha masculino feito com precisão cirúrgica na navalha.' },
-  { id: 's4', name: 'Pigmentação de Barba', price: 40, duration: 30, description: 'Correção de falhas e realce da barba utilizando pigmento de alta durabilidade e acabamento natural.' },
-  { id: 's5', name: 'Combo Imperial', price: 100, duration: 80, description: 'Corte de cabelo + Barba Premium + Lavagem especial e uma cerveja artesanal trincando de brinde.' }
+  { id: 's_1', name: "Barba Simples", price: 45, description: "Alinhamento e corte da barba com máquina e navalha, finalizado com óleo aromático de alta qualidade.", duration: 30, active: true, createdAt: new Date().toISOString() },
+  { id: 's_2', name: "Barboterapia", price: 50, description: "Ritual completo com toalha quente, massagem facial, espuma hidratante e óleos essenciais pós-barba.", duration: 40, active: true, createdAt: new Date().toISOString() },
+  { id: 's_3', name: "Corte de Cabelo", price: 55, description: "Corte clássico ou moderno com máquina e tesoura, finalizado com lavagem e pomada premium.", duration: 40, active: true, createdAt: new Date().toISOString() },
+  { id: 's_4', name: "Depilação de Nariz", price: 30, description: "Higienização e remoção de pelos excessivos do nariz com cera morna hipoalergênica especial.", duration: 15, active: true, createdAt: new Date().toISOString() },
+  { id: 's_5', name: "Depilação de Orelha", price: 30, description: "Remoção segura e eficiente de pelos indesejados na orelha utilizando cera morna premium.", duration: 15, active: true, createdAt: new Date().toISOString() },
+  { id: 's_6', name: "Hidratação", price: 30, description: "Tratamento profundo com máscara reconstrutora para devolver o brilho e a maciez aos cabelos secos.", duration: 20, active: true, createdAt: new Date().toISOString() },
+  { id: 's_7', name: "Limpeza de Pele", price: 28, description: "Remoção de impurezas, cravos e oleosidade excessiva com máscara negra e esfoliação revigorante.", duration: 30, active: true, createdAt: new Date().toISOString() },
+  { id: 's_8', name: "Luzes", price: 185, description: "Clareamento parcial dos fios com técnicas modernas para um efeito iluminado personalizado.", duration: 90, active: true, createdAt: new Date().toISOString() },
+  { id: 's_9', name: "Pezinho (Acabamento)", price: 20, description: "Acabamento e contorno do cabelo (nuca, costeletas e testa) feito na navalha e finalizado com loção.", duration: 15, active: true, createdAt: new Date().toISOString() },
+  { id: 's_10', name: "Pigmentação", price: 25, description: "Correção de falhas e realce do contorno da barba ou cabelo com pigmento de acabamento natural.", duration: 20, active: true, createdAt: new Date().toISOString() },
+  { id: 's_11', name: "Selagem", price: 75, description: "Tratamento térmico para redução de volume, frizz e alinhamento dos fios com aspect natural.", duration: 60, active: true, createdAt: new Date().toISOString() },
+  { id: 's_12', name: "Sobrancelha", price: 15, description: "Design de sobrancelha masculino com navalha ou pinça, valorizando o olhar e a harmonia facial.", duration: 15, active: true, createdAt: new Date().toISOString() },
+  { id: 's_13', name: "Upgrade do Platinado", price: 55, description: "Manutenção e matização do tom platinado para cabelos descoloridos, neutralizando amarelos indesejados.", duration: 45, active: true, createdAt: new Date().toISOString() }
 ];
 
 const INITIAL_EMPLOYEES = [
@@ -97,47 +111,15 @@ const mockSubscriptions = {};
 // --- API UNIFICADA DO BANCO ---
 
 // 1. Serviços (CRUD)
-export const getServices = async () => {
-  if (isMock) {
-    return getStorageItem('services', INITIAL_SERVICES);
-  }
-  const q = query(collection(db, 'services'));
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-};
+export const getServices = _getServices;
+export const deleteService = _deleteService;
 
 export const saveService = async (service) => {
-  if (isMock) {
-    const list = await getServices();
-    if (service.id) {
-      const idx = list.findIndex(s => s.id === service.id);
-      if (idx !== -1) list[idx] = service;
-    } else {
-      service.id = 's_' + Date.now();
-      list.push(service);
-    }
-    setStorageItem('services', list);
-    return service;
-  }
   if (service.id) {
-    const docRef = doc(db, 'services', service.id);
-    const { id, ...data } = service;
-    await setDoc(docRef, data, { merge: true });
-    return service;
+    return _updateService(service.id, service);
   } else {
-    const docRef = await addDoc(collection(db, 'services'), service);
-    return { id: docRef.id, ...service };
+    return _createService(service);
   }
-};
-
-export const deleteService = async (id) => {
-  if (isMock) {
-    const list = await getServices();
-    const filtered = list.filter(s => s.id !== id);
-    setStorageItem('services', filtered);
-    return;
-  }
-  await deleteDoc(doc(db, 'services', id));
 };
 
 // 2. Funcionários / Equipe (CRUD)

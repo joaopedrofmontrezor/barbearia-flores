@@ -6,6 +6,7 @@ import { subscribeAuth } from './firebase/authService';
 const LandingPage = lazy(() => import('./pages/LandingPage'));
 const AdminLogin = lazy(() => import('./pages/AdminLogin'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const Services = lazy(() => import('./pages/Services'));
 
 // Componente de carregamento premium
 const PremiumLoader = () => (
@@ -71,6 +72,8 @@ function App() {
         <Routes>
           {/* Rotas Públicas */}
           <Route path="/" element={<LandingPage />} />
+          <Route path="/servicos" element={<Services />} />
+          <Route path="/services" element={<Services />} />
           
           {/* Rota de Login do Admin (Protegida contra usuários já autenticados) */}
           <Route 

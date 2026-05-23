@@ -2,18 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { logoutAdmin, getSessionUser } from '../firebase/authService';
 import { 
-  getServices, saveService, deleteService,
   getEmployees, saveEmployee, deleteEmployee,
   getTestimonials, saveTestimonial, deleteTestimonial,
   getGallery, saveGalleryItem, deleteGalleryItem,
   getSettings, saveSettings,
   subscribeBookings, saveBooking, deleteBooking
 } from '../firebase/dbService';
+import { 
+  getServices, createService, updateService, deleteService 
+} from '../services/firebase/services';
 import { uploadMedia } from '../firebase/storageService';
 import { 
   Calendar, Scissors, Users, MessageSquare, Image, Settings, LogOut, 
   Plus, Edit, Trash2, Check, X, TrendingUp, DollarSign, Clock, MapPin, 
-  Phone, Mail, Globe, Upload, User, Star, Briefcase, FileText
+  Phone, Mail, Globe, Upload, User, Star, Briefcase, FileText, Sparkles
 } from 'lucide-react';
 
 const AdminDashboard = () => {
@@ -43,7 +45,7 @@ const AdminDashboard = () => {
   const [uploadPreview, setUploadPreview] = useState('');
 
   // Form Fields State
-  const [serviceForm, setServiceForm] = useState({ name: '', price: '', duration: '', description: '' });
+  const [serviceForm, setServiceForm] = useState({ name: '', price: '', duration: '', description: '', active: true });
   const [employeeForm, setEmployeeForm] = useState({ name: '', role: '', bio: '', photo: '', rating: 5.0 });
   const [testimonialForm, setTestimonialForm] = useState({ name: '', text: '', rating: 5 });
   const [galleryForm, setGalleryForm] = useState({ title: '', category: 'Corte', image: '' });
@@ -135,9 +137,17 @@ const AdminDashboard = () => {
       }
 
       if (modalType === 'service') {
-        const item = { ...serviceForm, price: Number(serviceForm.price), duration: Number(serviceForm.duration) };
-        if (editingItem) item.id = editingItem.id;
-        await saveService(item);
+        const item = { 
+          ...serviceForm, 
+          price: Number(serviceForm.price), 
+          duration: Number(serviceForm.duration),
+          active: serviceForm.active !== undefined ? serviceForm.active : true
+        };
+        if (editingItem) {
+          await updateService(editingItem.id, item);
+        } else {
+          await createService(item);
+        }
         setServices(await getServices());
       } 
       else if (modalType === 'employee') {
@@ -202,6 +212,35 @@ const AdminDashboard = () => {
     }
   };
 
+  // Seed default services handler
+  const handleSeedServices = async () => {
+    if (window.confirm("Deseja realmente carregar a lista de serviços padrão da Barbearia Flores? Serviços já existentes com o mesmo nome não serão duplicados.")) {
+      setActionLoading(true);
+      try {
+        const { SEED_SERVICES } = await import('../services/firebase/services');
+        const currentServices = await getServices();
+        const existingNames = new Set(currentServices.map(s => s.name.toLowerCase().trim()));
+        
+        let addedCount = 0;
+        for (const service of SEED_SERVICES) {
+          const nameTrimmed = service.name.trim();
+          if (!existingNames.has(nameTrimmed.toLowerCase())) {
+            await createService(service);
+            addedCount++;
+          }
+        }
+        
+        // Refresh list
+        setServices(await getServices());
+        alert(`Carga concluída com sucesso! ${addedCount} novos serviços cadastrados.`);
+      } catch (err) {
+        alert("Erro ao popular os serviços padrão: " + err.message);
+      } finally {
+        setActionLoading(false);
+      }
+    }
+  };
+
   // Settings Save handler
   const handleSaveSettings = async (e) => {
     e.preventDefault();
@@ -256,7 +295,7 @@ const AdminDashboard = () => {
     setUploadPreview('');
 
     if (type === 'service') {
-      setServiceForm(item || { name: '', price: '', duration: '', description: '' });
+      setServiceForm(item || { name: '', price: '', duration: '', description: '', active: true });
     } else if (type === 'employee') {
       setEmployeeForm(item || { name: '', role: '', bio: '', photo: '', rating: 5.0 });
     } else if (type === 'testimonial') {
@@ -377,13 +416,26 @@ const AdminDashboard = () => {
 
               {/* Add CTA */}
               {activeTab !== 'settings' && activeTab !== 'bookings' && (
-                <button
-                  onClick={() => openModal(activeTab.slice(0, -1))}
-                  className="btn-gold px-5 py-3 rounded-lg text-xs flex items-center gap-2 shrink-0 shadow-md font-bold uppercase tracking-wider"
-                >
-                  <Plus className="w-4 h-4" />
-                  Novo Item
-                </button>
+                <div className="flex items-center gap-3 shrink-0">
+                  {activeTab === 'services' && (
+                    <button
+                      type="button"
+                      onClick={handleSeedServices}
+                      disabled={actionLoading}
+                      className="btn-outline px-4 py-2.5 rounded-lg text-xs flex items-center gap-1.5 font-bold uppercase tracking-wider disabled:opacity-50 cursor-pointer"
+                    >
+                      <Sparkles className="w-4 h-4 text-gold" />
+                      Popular Padrão
+                    </button>
+                  )}
+                  <button
+                    onClick={() => openModal(activeTab.slice(0, -1))}
+                    className="btn-gold px-5 py-3 rounded-lg text-xs flex items-center gap-2 shadow-md font-bold uppercase tracking-wider cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Novo Item
+                  </button>
+                </div>
               )}
             </div>
 
@@ -929,6 +981,16 @@ const AdminDashboard = () => {
                         className="w-full px-4 py-2.5 bg-dark-900 border border-dark-700 rounded-lg text-white focus:outline-none focus:border-gold transition-colors text-sm font-sans"
                         required
                       ></textarea>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input 
+                        type="checkbox"
+                        id="service-active"
+                        checked={serviceForm.active !== false}
+                        onChange={(e) => setServiceForm({ ...serviceForm, active: e.target.checked })}
+                        className="w-4 h-4 rounded border-dark-700 text-gold focus:ring-gold accent-gold"
+                      />
+                      <label htmlFor="service-active" className="text-xs font-semibold text-dark-500 uppercase tracking-widest cursor-pointer select-none">Serviço Ativo (Exibir na tela)</label>
                     </div>
                   </>
                 )}

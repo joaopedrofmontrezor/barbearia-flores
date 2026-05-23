@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Scissors, Calendar, Clock, MapPin, Phone, Mail, ChevronRight, 
@@ -11,9 +11,11 @@ import {
   getGallery, getSettings, saveBooking 
 } from '../firebase/dbService';
 import { logoutAdmin } from '../firebase/authService';
+import ServiceCard from '../components/ServiceCard';
 
 const LandingPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const bookingSectionRef = useRef(null);
 
   // States for DB data
@@ -129,6 +131,25 @@ const LandingPage = () => {
 
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Monitora redirecionamentos da página de serviços com serviço pré-selecionado
+  useEffect(() => {
+    if (location.state && location.state.autoBook && location.state.serviceId) {
+      setBookingForm(prev => ({
+        ...prev,
+        serviceId: location.state.serviceId,
+        serviceName: location.state.serviceName,
+        price: location.state.price
+      }));
+      setBookingStep(1); // Reinicia e pede para escolher a unidade
+      setTimeout(() => {
+        scrollToSection(bookingSectionRef);
+      }, 500);
+      
+      // Limpa o estado para evitar disparos em reloads futuros
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   // Testimonials slider interval
   useEffect(() => {
@@ -282,7 +303,7 @@ const LandingPage = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-8 text-xs font-semibold tracking-widest uppercase">
-            {['sobre', 'servicos', 'galeria', 'equipe', 'depoimentos', 'localizacao'].map((id) => (
+            {['SOBRE', 'SERVIÇOS', 'GALERIA', 'EQUIPE', 'DEPOIMENTOS', 'LOCALIZAÇÃO'].map((id) => (
               <button key={id} onClick={() => scrollToId(id)} className="hover:text-gold transition-colors relative group py-2">
                 {id}
                 <span className="absolute bottom-0 left-0 w-0 h-[1.5px] bg-gold transition-all duration-300 group-hover:w-full"></span>
@@ -301,7 +322,7 @@ const LandingPage = () => {
               onClick={() => navigate('/admin')} 
               className="px-4 py-2.5 text-xs text-dark-500 hover:text-gold uppercase tracking-widest transition-colors font-semibold"
             >
-              Admin
+              ADMIN
             </button>
           </div>
 
@@ -540,46 +561,31 @@ const LandingPage = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {services.map((item) => (
-              <div 
-                key={item.id} 
-                className="glass-card rounded-xl p-8 border border-dark-800 flex flex-col justify-between glass-card-hover group"
-              >
-                <div>
-                  <div className="flex justify-between items-start gap-4 mb-4">
-                    <h3 className="font-title font-bold text-lg text-white group-hover:text-gold transition-colors uppercase tracking-wider">
-                      {item.name}
-                    </h3>
-                    <span className="text-xl font-bold font-sans text-gold">R$ {item.price}</span>
-                  </div>
-                  <p className="text-xs text-dark-500 leading-relaxed font-light mb-6">
-                    {item.description}
-                  </p>
-                </div>
-                <div className="flex items-center justify-between pt-4 border-t border-dark-950">
-                  <div className="flex items-center gap-2 text-xs text-dark-500 font-semibold">
-                    <Clock className="w-4 h-4 text-gold/70" />
-                    <span>{item.duration} min</span>
-                  </div>
-                  <button 
-                    onClick={() => {
-                      setBookingForm({
-                        ...bookingForm,
-                        serviceId: item.id,
-                        serviceName: item.name,
-                        price: item.price
-                      });
-                      setBookingStep(1); // Reinicia e manda escolher barbeiro
-                      scrollToSection(bookingSectionRef);
-                    }}
-                    className="text-xs font-bold text-gold group-hover:underline flex items-center gap-1 uppercase tracking-wider transition-all"
-                  >
-                    Agendar
-                    <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                  </button>
-                </div>
-              </div>
+            {services.slice(0, 6).map((item) => ( // Exibe apenas os primeiros 6 serviços em destaque na Home
+              <ServiceCard
+                key={item.id}
+                service={item}
+                onBook={(srv) => {
+                  setBookingForm({
+                    ...bookingForm,
+                    serviceId: srv.id,
+                    serviceName: srv.name,
+                    price: srv.price
+                  });
+                  setBookingStep(1); // Reinicia e manda escolher unidade
+                  scrollToSection(bookingSectionRef);
+                }}
+              />
             ))}
+          </div>
+
+          <div className="mt-12 text-center">
+            <button
+              onClick={() => navigate('/servicos')}
+              className="btn-outline px-8 py-4.5 rounded-lg text-xs font-bold"
+            >
+              Ver Menu Completo de Serviços
+            </button>
           </div>
         </div>
       </section>
