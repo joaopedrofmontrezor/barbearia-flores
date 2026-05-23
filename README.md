@@ -76,9 +76,6 @@ npm run dev
 ```
 Acesse `http://localhost:5173`.
 - Para entrar no **Painel Administrativo**, clique no link "Admin" no rodapé ou acesse `http://localhost:5173/admin`.
-- Use as credenciais de demonstração:
-  - **E-mail**: `admin@barbeariapremium.com`
-  - **Senha**: `admin123`
 
 ---
 
