@@ -1,144 +1,172 @@
-# 💈 Barbearia Flores - Sistema SaaS Premium
+# 💈 Barbearia Flores: Sistema SaaS Premium de Gestão & Agendamento
 
-Este é um sistema web completo, moderno e de altíssimo nível para barbearias de alto padrão. Projetado especificamente para ser vendido como um serviço mensal (SaaS), o projeto foca em alta conversão de clientes, animações cinematográficas fluidas, excelente performance móvel e administração de dados em tempo real.
+Este repositório contém a base de código do **Barbearia Flores**, uma plataforma web de altíssimo nível (SaaS) projetada especificamente para barbearias premium e franquias de estética masculina. Como um arquiteto sênior, estruturei este sistema focando em quatro pilares fundamentais: **alta conversão e usabilidade (UX/UI)**, **segurança defensiva**, **resiliência arquitetural** e **independência de infraestrutura**.
 
 ---
 
-## 🚀 Principais Recursos
+## 🏛️ Arquitetura do Sistema e Decisões de Design
 
-- **Landing Page Cinematográfica**: 10 seções interativas com transições suaves (Framer Motion) e visual luxuoso (preto, cinza escuro e detalhes em dourado).
-- **Antes e Depois Interativo**: Um controle deslizante interativo que revela a transformação visual (clássica vs. moderna) utilizando clip-path responsivo.
-- **Wizard de Agendamento Online**: Fluxo guiado em 4 etapas (Escolha de Barbeiro ➔ Serviço ➔ Data e Horário ➔ Dados de Contato) com salvamento em banco de dados e notificação instantânea formatada no WhatsApp.
-- **Painel Administrativo Completo**: Dashboard moderno com controle em tempo real de agendamentos, faturamento estimado e estatísticas rápidas.
-- **CRUDs em Tempo Real**: Gerenciamento de Serviços, Funcionários, Depoimentos, Fotos da Galeria e Configurações Gerais com atualizações instantâneas no site dos clientes.
-- **Fallback Inteligente (Modo Demo)**: Se as chaves do Firebase não forem configuradas no `.env`, o sistema ativa automaticamente o modo offline usando LocalStorage, permitindo testar toda a aplicação e painel de controle imediatamente.
+### 🔄 1. Abstração de Dados Híbrida (Modo Híbrido Resiliente)
+O sistema implementa uma camada de serviço híbrida inteligente (`dbService.js`). Se os parâmetros de ambiente do Firebase não estiverem configurados (`.env`), o sistema **ativa de forma transparente o modo offline simulado (Demo)** usando `LocalStorage`. Isso permite a homologação, testes rápidos de UX/UI e demonstração comercial instantânea sem necessidade de infraestrutura ativa.
+
+```mermaid
+graph TD
+    A[Aplicação Frontend React] --> B{Possui credenciais .env?}
+    B -- Sim --> C[Camada Real: Firebase Auth / Firestore / Storage]
+    B -- Não --> D[Camada Mock: LocalStorage Sandboxed]
+    C --> E[Persistência na Nuvem]
+    D --> F[Persistência Sandbox no Navegador]
+```
+
+### 💈 2. Modelagem Relacional Dinâmica (Filiais & Catálogos)
+A modelagem NoSQL no Firestore foi estruturada para suportar múltiplos estabelecimentos (franquias):
+* **Unidades Físicas (`/branches`)**: Benassi e Bairro Alto.
+* **Barbeiros (`/employees`)**: Vinculados a uma unidade específica (`branchId`).
+* **Wizard de Agendamento Inteligente**:
+  1. O usuário escolhe a **Unidade**.
+  2. O sistema filtra e exibe **apenas os profissionais** daquela unidade específica.
+  3. Ao selecionar o profissional, a interface exibe **apenas os serviços** que ele tem habilitação (`allowedServices`) para executar, evitando agendamentos impossíveis.
+
+### 🛡️ 3. Segurança Defensiva e Controle de Acesso
+* **Proteção Contra Brute-Force (Bloqueio Admin)**: O componente `AdminLogin.jsx` possui uma política local de rate-limiting reativa. Se o usuário falhar 3 tentativas de login consecutivas, um bloqueio temporal de segurança de 30 segundos é acionado.
+* **Regras de Acesso Firestore (`firestore.rules`)**: Apenas administradores autenticados e registrados com cargo explícito (`role == "admin"`) na coleção `/admins` podem gravar ou excluir dados nas coleções públicas de serviços, equipe, fotos e depoimentos.
+* **Regras do Storage (`storage.rules`)**: Arquivos de imagem enviados são limitados por tipo (`image/*`), tamanho e apenas administradores autenticados possuem autorização de gravação.
+
+### 🖼️ 4. Otimização Client-Side (Performance & Banda)
+* **Compressão de Mídia em Tempo Real (`imageCompressor.js`)**: Antes de enviar qualquer foto para o Firebase Storage, a aplicação realiza a compressão client-side (reduzindo dimensões para um limite de 800px de largura e aplicando fator de qualidade JPEG de 70%). Isso reduz drasticamente o consumo de banda dos administradores e os custos de armazenamento em nuvem.
+
+### 🎨 5. Acessibilidade & UI/UX Premium (WCAG AA)
+Revisado por um Designer de Produto Sênior, o sistema implementa uma paleta de cores escura e luxuosa em contraste com tons metálicos dourados. Todas as tipografias cinzas secundárias e legendas de formulários foram otimizadas de `text-dark-500` para tons elevados como `text-dark-300` e `text-dark-400` para atingir a taxa mínima de contraste exigida de **4.5:1 (Padrão WCAG AA)**, otimizando o conforto visual e o uso mobile sob luz solar direta.
 
 ---
 
 ## 🛠️ Stack Tecnológica
 
-### Frontend
-- **React.js (Vite)**
-- **Tailwind CSS** (Configurado com identidade visual de luxo)
-- **Framer Motion** (Animações fluidas de entrada e transições de tela)
-- **Lucide React** (Ícones premium e modernos)
-- **React Router DOM** (Controle de navegação e guardas de rotas seguras)
-
-### Backend & Banco de Dados (Firebase)
-- **Firebase Auth** (Autenticação segura de administradores)
-- **Firebase Firestore** (Banco NoSQL em tempo real para controle de dados)
-- **Firebase Storage** (Armazenamento em nuvem de fotos de profissionais e galeria)
-- **Firebase Hosting** (Hospedagem estática com HTTPS seguro e CDN)
+* **Core & Roteamento**: [React.js](https://react.dev/) (Vite) + [React Router DOM](https://reactrouter.com/) (Guarda de rotas robusta).
+* **Estilização**: [Tailwind CSS](https://tailwindcss.com/) (Extensões customizadas no escopo de variáveis CSS `@theme`).
+* **Animações Cinematográficas**: [Framer Motion](https://www.framer.com/motion/) (Entradas elegantes de seção, transições fluidas no Wizard).
+* **Biblioteca de Ícones**: [Lucide React](https://lucide.dev/).
+* **Backend como Serviço (BaaS)**: 
+  * [Firebase Auth](https://firebase.google.com/docs/auth) (Gestão segura de sessões administrativas).
+  * [Cloud Firestore NoSQL](https://firebase.google.com/docs/firestore) (Sincronização em tempo real dos agendamentos via listener ativo).
+  * [Cloud Storage](https://firebase.google.com/docs/storage) (Upload e armazenamento CDN de fotos de perfil e galeria).
+  * [Firebase Hosting](https://firebase.google.com/docs/hosting) (Hospedagem estática veloz global por CDN).
 
 ---
 
-## 📦 Estrutura do Projeto
+## 📦 Organização do Projeto (Clean Architecture)
 
 ```text
-barbearia-premium/
+barbearia-flores/
 ├── scripts/
-│   └── init-db.js          # Script para popular o Firebase Firestore
+│   └── init-db.js            # Script automatizado de carga e purificação de banco de dados
 ├── src/
-│   ├── assets/             # Arquivos de imagem estáticos
+│   ├── assets/               # Imagens e logotipos estáticos de suporte
+│   ├── components/
+│   │   └── ServiceCard.jsx   # Card premium de serviços isolado com micro-interações de hover
 │   ├── firebase/
-│   │   ├── config.js       # Inicialização inteligente do Firebase
-│   │   ├── dbService.js    # Serviço de banco unificado (Firestore / LocalStorage)
-│   │   ├── authService.js  # Serviço de autenticação unificado
-│   │   └── storageService.js # Serviço de upload de arquivos (Storage / Base64)
+│   │   ├── config.js         # Inicializador reativo com detecção de modo Sandbox/Real
+│   │   ├── authService.js    # Interfaceamento e abstração de autenticação Firebase Auth
+│   │   ├── dbService.js      # Camada reativa híbrida NoSQL Firestore / LocalStorage
+│   │   └── storageService.js # Processamento de uploads de arquivos
 │   ├── pages/
-│   │   ├── LandingPage.jsx    # Experiência visual da Landing Page
-│   │   ├── AdminLogin.jsx     # Login do administrador
-│   │   └── AdminDashboard.jsx # Painel administrativo completo
-│   ├── App.jsx             # Roteamento e guarda de rotas
-│   ├── index.css           # Estilos globais e componentes customizados
-│   └── main.jsx            # Ponto de entrada React
-├── firebase.json           # Configuração do Firebase CLI
-├── firestore.rules         # Regras de segurança de dados
-├── storage.rules           # Regras de segurança de arquivos
-├── tailwind.config.js      # Identidade visual (Paleta Dourada & Preta)
-└── README.md               # Documentação do projeto
+│   │   ├── LandingPage.jsx   # Hub Visual principal com Wizard de Agendamento dinâmico
+│   │   ├── Services.jsx      # Catálogo e Tabela de Serviços pública e indexável
+│   │   ├── AdminLogin.jsx    # Portal de acesso administrativo com proteção brute-force
+│   │   └── AdminDashboard.jsx# Central Admin de controle financeiro, equipe, e agendamentos reais
+│   ├── utils/
+│   │   └── imageCompressor.js# Utilitário client-side de compressão canvas para otimização de imagens
+│   ├── index.css             # Componentização Tailwind, fontes Cinzel/Montserrat e design tokens
+│   ├── App.jsx               # Roteamento global e guarda de rotas de segurança de nível de sessão
+│   └── main.jsx              # Inicializador do ciclo de vida da aplicação React
+├── firestore.rules           # Regras de segurança RBAC declarativas de banco de dados
+├── storage.rules             # Regras declarativas de segurança de arquivos em nuvem
+└── tailwind.config.js        # Design System tokens (Dourado de luxo & Paleta Preta)
 ```
 
 ---
 
-## 💻 Instalação e Execução Local
+## ⚙️ Configuração do Ambiente e Execução Local
 
-### Passo 1: Clonar e instalar dependências
-Certifique-se de que possui o **Node.js (v18+)** instalado. No diretório do projeto, execute:
+### 1. Pré-requisitos
+* Node.js v18.0.0 ou superior
+* Gerenciador de Pacotes npm ou yarn
+
+### 2. Clonar e Instalar Dependências
 ```bash
+# Instalar todos os pacotes requeridos
 npm install
 ```
 
-### Passo 2: Executar em Modo de Demonstração (Sem Firebase)
-Para rodar a aplicação imediatamente usando banco de dados local simulado (LocalStorage):
+### 3. Rodar em Modo Demo Sandbox (Offline Instantâneo)
+Para testar a aplicação inteira (Landing Page, fluxo completo de agendamento online e o Painel Administrativo de forma mockada rápida), execute:
 ```bash
 npm run dev
 ```
-Acesse `http://localhost:5173`.
-- Para entrar no **Painel Administrativo**, clique no link "Admin" no rodapé ou acesse `http://localhost:5173/admin`.
+O sistema criará o banco de dados simulado no LocalStorage. Acesse `http://localhost:5173`.
+* **Painel Administrativo**: Clique no link "ADMIN" no header ou acesse `http://localhost:5173/admin` para testar. As credenciais em modo demo são livres.
 
 ---
 
-## ⚙️ Conectando com seu Firebase (Produção)
+## 🔗 Integração com Banco de Dados de Produção (Firebase)
 
-### Passo 1: Criar o Projeto no Firebase
-1. Vá até o [Firebase Console](https://console.firebase.google.com/) e crie um novo projeto.
-2. Ative os seguintes serviços no menu lateral:
-   - **Authentication** (Habilite o provedor de E-mail/Senha).
-   - **Cloud Firestore** (Crie o banco em modo produção/teste).
-   - **Storage** (Crie o balde de armazenamento padrão).
-   - **Hosting** (Selecione a opção de hospedagem).
+### Passo 1: Provisionar Recursos no Firebase Console
+1. Crie um projeto no [Firebase Console](https://console.firebase.google.com/).
+2. Ative os seguintes serviços fundamentais:
+   * **Authentication**: Habilite o método de login por **E-mail/Senha**.
+   * **Cloud Firestore Database**: Ative o banco de dados.
+   * **Storage**: Provisione o balde padrão para armazenar mídias.
+   * **Hosting**: Ative o provisionamento de hospedagem.
 
-### Passo 2: Configurar o Arquivo `.env`
-Renomeie o arquivo `.env.example` para `.env` e adicione as chaves fornecidas nas configurações do seu projeto do Firebase:
+### Passo 2: Definir Variáveis de Ambiente
+Duplique o arquivo `.env.example`, renomeie para `.env` no diretório raiz do projeto e configure as credenciais da sua web-app:
+
 ```env
-VITE_FIREBASE_API_KEY=sua_api_key_real
-VITE_FIREBASE_AUTH_DOMAIN=seu_auth_domain_real
-VITE_FIREBASE_PROJECT_ID=seu_project_id_real
-VITE_FIREBASE_STORAGE_BUCKET=seu_storage_bucket_real
-VITE_FIREBASE_MESSAGING_SENDER_ID=seu_messaging_sender_id_real
-VITE_FIREBASE_APP_ID=seu_app_id_real
-VITE_FIREBASE_MEASUREMENT_ID=seu_measurement_id_real
+VITE_FIREBASE_API_KEY=seu_api_key_fornecido_no_console
+VITE_FIREBASE_AUTH_DOMAIN=seu_projeto.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=seu_projeto_id
+VITE_FIREBASE_STORAGE_BUCKET=seu_projeto.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=seu_messaging_id
+VITE_FIREBASE_APP_ID=seu_app_id
+VITE_FIREBASE_MEASUREMENT_ID=seu_measurement_id
 
 VITE_WHATSAPP_NUMBER=5516994206778
 ```
 
-### Passo 3: Criar seu Usuário Admin no Firebase
-No painel do Firebase Console em **Authentication**, clique em **Add User** e cadastre o e-mail administrador e senha.
-Depois, no **Firestore Database**, crie uma coleção chamada `admins` e adicione um documento onde o **ID do Documento** seja exatamente o **UID** do usuário criado no Authentication. Adicione o campo `role: "admin"`.
+### Passo 3: Cadastrar Usuário Administrativo Real
+1. Acesse seu Firebase Console na aba **Authentication** e crie um usuário admin com e-mail e senha. Note o **UID** gerado.
+2. Acesse a aba **Firestore Database** e crie um documento na coleção `admins`. O **ID do documento** deve ser o **UID** exato do usuário. Adicione a chave:
+   * `role`: "admin"
 
-### Passo 4: Rodar o script de carga inicial (Seeder)
-Para preencher automaticamente o banco de dados do Firebase com serviços premium, profissionais e depoimentos iniciais, execute:
+### Passo 4: Executar a Carga Inicial Purificada de Dados (Seed)
+Para carregar os 13 serviços premium oficiais da barbearia (limpos e livre das chaves legadas obsoletas), as filiais e a lista inicial de barbeiros reais distribuídos por filiais, execute o seeder:
 ```bash
+# Roda o script de carga autenticado no Firestore
 npm run seed
 ```
 
 ---
 
-## 🚀 Deploy no Firebase Hosting
+## 🚀 Build de Produção & Deploy no Firebase Hosting
 
-### Passo 1: Instalar o Firebase CLI
-Caso não tenha instalado globalmente:
-```bash
-npm install -g firebase-tools
-```
+Sendo um projeto SPA reativo compilado em Vite, o pipeline de implantação foi planejado para ser executado de forma simples:
 
-### Passo 2: Login e Inicialização do projeto
-```bash
-firebase login
-firebase use --add seu-project-id-do-firebase
-```
-
-### Passo 3: Build do Projeto React
-Gere o pacote de produção otimizado:
+### 1. Compilação de Produção Otimizada
+O Vite gerará um bundle minificado e otimizado com divisões de chunk em menos de 20 segundos:
 ```bash
 npm run build
 ```
 
-### Passo 4: Publicar Regras e Hospedagem
-Suba as regras de segurança e o site compilado de uma única vez:
+### 2. Efetuar Login no Firebase CLI
+```bash
+npm install -g firebase-tools
+firebase login
+firebase use --add seu-projeto-id
+```
+
+### 3. Deploy de Infraestrutura de Código
+Implante as regras declarativas de segurança do banco e do storage simultaneamente com os arquivos otimizados compilados na pasta `/dist`:
 ```bash
 firebase deploy
 ```
-
-Seu site estará ativo na URL fornecida pelo Firebase!
+O Firebase fornecerá a URL permanente com certificado SSL gratuito (`https://sua-url.web.app`) ativa em produção!
