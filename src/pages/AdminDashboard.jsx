@@ -12,6 +12,7 @@ import {
   getServices, createService, updateService, deleteService 
 } from '../services/firebase/services';
 import { uploadMedia } from '../firebase/storageService';
+import { compressImage } from '../utils/imageCompressor';
 import { 
   Calendar, Scissors, Users, MessageSquare, Image, Settings, LogOut, 
   Plus, Edit, Trash2, Check, X, TrendingUp, DollarSign, Clock, MapPin, 
@@ -46,7 +47,7 @@ const AdminDashboard = () => {
 
   // Form Fields State
   const [serviceForm, setServiceForm] = useState({ name: '', price: '', duration: '', description: '', active: true });
-  const [employeeForm, setEmployeeForm] = useState({ name: '', role: '', bio: '', photo: '', rating: 5.0 });
+  const [employeeForm, setEmployeeForm] = useState({ name: '', role: '', bio: '', photo: '', rating: 5.0, branchId: 'br1', branchName: 'Barbearia Flores - Benassi' });
   const [testimonialForm, setTestimonialForm] = useState({ name: '', text: '', rating: 5 });
   const [galleryForm, setGalleryForm] = useState({ title: '', category: 'Corte', image: '' });
 
@@ -133,7 +134,9 @@ const AdminDashboard = () => {
     try {
       let imageUrl = '';
       if (uploadFile) {
-        imageUrl = await uploadMedia(uploadFile, modalType);
+        // Comprime a imagem no lado do cliente antes do upload
+        const compressed = await compressImage(uploadFile, 800, 800, 0.7);
+        imageUrl = await uploadMedia(compressed, modalType);
       }
 
       if (modalType === 'service') {
@@ -297,7 +300,7 @@ const AdminDashboard = () => {
     if (type === 'service') {
       setServiceForm(item || { name: '', price: '', duration: '', description: '', active: true });
     } else if (type === 'employee') {
-      setEmployeeForm(item || { name: '', role: '', bio: '', photo: '', rating: 5.0 });
+      setEmployeeForm(item || { name: '', role: '', bio: '', photo: '', rating: 5.0, branchId: 'br1', branchName: 'Barbearia Flores - Benassi' });
     } else if (type === 'testimonial') {
       setTestimonialForm(item || { name: '', text: '', rating: 5 });
     } else if (type === 'gallery') {
@@ -354,7 +357,7 @@ const AdminDashboard = () => {
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold tracking-wide transition-all ${
                   activeTab === tab.id 
                     ? 'bg-gold/10 text-gold border-l-2 border-gold font-bold shadow-gold-glow' 
-                    : 'text-dark-500 hover:bg-dark-800 hover:text-white'
+                    : 'text-dark-400 hover:bg-dark-800 hover:text-white hover:scale-[1.02]'
                 }`}
               >
                 <tab.icon className="w-5 h-5 shrink-0" />
@@ -371,11 +374,11 @@ const AdminDashboard = () => {
               <span className="text-xs text-white font-semibold truncate max-w-[140px]">
                 {currentUser?.displayName || 'Administrador'}
               </span>
-              <span className="text-[10px] text-dark-500 truncate max-w-[140px]">{currentUser?.email}</span>
+              <span className="text-[10px] text-dark-400 truncate max-w-[140px] font-medium">{currentUser?.email}</span>
             </div>
             <button
               onClick={handleLogout}
-              className="p-2 rounded-lg text-dark-500 hover:text-red-400 hover:bg-red-950/20 transition-all"
+              className="p-2 rounded-lg text-dark-400 hover:text-red-400 hover:bg-red-950/20 transition-all"
               title="Sair"
             >
               <LogOut className="w-5 h-5" />
@@ -404,7 +407,7 @@ const AdminDashboard = () => {
                   {activeTab === 'gallery' && 'Galeria de Fotos'}
                   {activeTab === 'settings' && 'Configurações Globais'}
                 </h1>
-                <p className="text-dark-500 text-xs mt-1 uppercase tracking-widest">
+                <p className="text-dark-300 text-xs mt-1 uppercase tracking-widest font-medium">
                   {activeTab === 'bookings' && 'Acompanhe as reservas de horários em tempo real'}
                   {activeTab === 'services' && 'Adicione, edite ou exclua serviços oferecidos'}
                   {activeTab === 'employees' && 'Gerencie os barbeiros parceiros e seus perfis'}
@@ -452,9 +455,9 @@ const AdminDashboard = () => {
                   ].map((card, i) => (
                     <div key={i} className="glass-card p-6 rounded-xl border border-dark-800 flex items-center justify-between">
                       <div>
-                        <span className="text-xs font-semibold text-dark-500 uppercase tracking-widest">{card.label}</span>
+                        <span className="text-xs font-semibold text-dark-300 uppercase tracking-widest">{card.label}</span>
                         <h3 className="text-3xl font-bold mt-2 font-sans">{card.value}</h3>
-                        <p className="text-[10px] text-dark-500 mt-1">{card.desc}</p>
+                        <p className="text-[10px] text-dark-400 mt-1 font-medium">{card.desc}</p>
                       </div>
                       <div className={`p-4 rounded-xl ${card.color}`}>
                         <card.icon className="w-6 h-6" />
@@ -470,13 +473,13 @@ const AdminDashboard = () => {
                   </div>
                   <div className="overflow-x-auto">
                     {bookings.length === 0 ? (
-                      <div className="p-12 text-center text-dark-500">
+                      <div className="p-12 text-center text-dark-300 font-medium">
                         Nenhum agendamento realizado até o momento.
                       </div>
                     ) : (
                       <table className="w-full text-left text-sm border-collapse">
                         <thead>
-                          <tr className="bg-dark-900 border-b border-dark-800 text-dark-500 text-xs uppercase tracking-widest font-semibold">
+                          <tr className="bg-dark-900 border-b border-dark-800 text-dark-300 text-xs uppercase tracking-widest font-bold">
                             <th className="p-4 pl-6">Cliente</th>
                             <th className="p-4">Contato</th>
                             <th className="p-4">Unidade</th>
@@ -492,7 +495,7 @@ const AdminDashboard = () => {
                             <tr key={booking.id} className="hover:bg-dark-900/50 transition-colors">
                               <td className="p-4 pl-6 font-semibold">{booking.clientName}</td>
                               <td className="p-4">
-                                <div className="flex flex-col text-xs text-dark-500">
+                                <div className="flex flex-col text-xs text-dark-300 font-medium">
                                   <span>{booking.clientPhone}</span>
                                   <span>{booking.clientEmail}</span>
                                 </div>
@@ -512,7 +515,7 @@ const AdminDashboard = () => {
                               <td className="p-4">
                                 <div className="flex flex-col">
                                   <span className="font-semibold">{booking.date.split('-').reverse().join('/')}</span>
-                                  <span className="text-xs text-dark-500">{booking.time}</span>
+                                  <span className="text-xs text-dark-300 font-medium">{booking.time}</span>
                                 </div>
                               </td>
                               <td className="p-4">
@@ -576,8 +579,8 @@ const AdminDashboard = () => {
                         <h3 className="font-title font-bold text-lg text-gold uppercase tracking-wider">{item.name}</h3>
                         <span className="text-xl font-bold font-sans text-white shrink-0">R$ {item.price}</span>
                       </div>
-                      <p className="text-xs text-dark-500 mb-4 line-clamp-3 leading-relaxed">{item.description}</p>
-                      <div className="flex items-center gap-2 text-xs text-dark-500">
+                      <p className="text-xs text-dark-300 mb-4 line-clamp-3 leading-relaxed">{item.description}</p>
+                      <div className="flex items-center gap-2 text-xs text-dark-300 font-medium">
                         <Clock className="w-4 h-4 text-gold" />
                         <span>Duração: {item.duration} min</span>
                       </div>
@@ -619,9 +622,16 @@ const AdminDashboard = () => {
                         </div>
                       </div>
                       <div className="p-6">
-                        <h3 className="font-title font-bold text-lg text-white uppercase tracking-wider mb-1">{item.name}</h3>
+                        <div className="flex justify-between items-start gap-2 mb-1">
+                          <h3 className="font-title font-bold text-lg text-white uppercase tracking-wider">{item.name}</h3>
+                          {item.branchName && (
+                            <span className="text-[9px] bg-gold/10 text-gold border border-gold/20 px-2 py-0.5 rounded font-bold uppercase tracking-wider shrink-0">
+                              {item.branchName.split(' - ')[1] || item.branchName}
+                            </span>
+                          )}
+                        </div>
                         <span className="text-xs text-gold font-semibold uppercase tracking-widest">{item.role}</span>
-                        <p className="text-xs text-dark-500 mt-4 leading-relaxed line-clamp-3">{item.bio}</p>
+                        <p className="text-xs text-dark-300 mt-4 leading-relaxed line-clamp-3 font-medium">{item.bio}</p>
                       </div>
                     </div>
                     <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-dark-800">
@@ -657,10 +667,10 @@ const AdminDashboard = () => {
                           ))}
                         </div>
                       </div>
-                      <p className="text-xs text-dark-500 italic leading-relaxed">"{item.text}"</p>
+                      <p className="text-xs text-dark-300 italic leading-relaxed font-medium">"{item.text}"</p>
                     </div>
                     <div className="flex items-center justify-between mt-6 pt-4 border-t border-dark-800">
-                      <span className="text-[10px] text-dark-500 uppercase font-semibold">{item.date}</span>
+                      <span className="text-[10px] text-dark-300 uppercase font-semibold">{item.date}</span>
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => openModal('testimonial', item)}
@@ -716,31 +726,31 @@ const AdminDashboard = () => {
                 <form onSubmit={handleSaveSettings} className="space-y-6">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-xs font-semibold text-dark-500 uppercase tracking-widest mb-2">WhatsApp da Barbearia</label>
+                      <label className="block text-xs font-semibold text-dark-300 uppercase tracking-widest mb-2">WhatsApp da Barbearia</label>
                       <div className="relative">
-                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-500" />
+                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-400" />
                         <input
                           type="text"
                           placeholder="5516994206778"
                           value={settings.phone}
                           onChange={(e) => setSettings({ ...settings, phone: e.target.value })}
-                          className="w-full pl-10 pr-4 py-3 bg-dark-900 border border-dark-700 rounded-lg text-white placeholder-dark-500 focus:outline-none focus:border-gold transition-colors text-sm"
+                          className="w-full pl-10 pr-4 py-3 bg-dark-900 border border-dark-700 rounded-lg text-white placeholder-dark-400 focus:outline-none focus:border-gold transition-colors text-sm"
                           required
                         />
                       </div>
-                      <p className="text-[10px] text-dark-500 mt-1">Código do país + DDD + Número (apenas números)</p>
+                      <p className="text-[10px] text-dark-400 mt-1 font-medium">Código do país + DDD + Número (apenas números)</p>
                     </div>
 
                     <div>
-                      <label className="block text-xs font-semibold text-dark-500 uppercase tracking-widest mb-2">E-mail de Contato</label>
+                      <label className="block text-xs font-semibold text-dark-300 uppercase tracking-widest mb-2">E-mail de Contato</label>
                       <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-500" />
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-400" />
                         <input
                           type="email"
                           placeholder="contato@barbeariaflores.com"
                           value={settings.email}
                           onChange={(e) => setSettings({ ...settings, email: e.target.value })}
-                          className="w-full pl-10 pr-4 py-3 bg-dark-900 border border-dark-700 rounded-lg text-white placeholder-dark-500 focus:outline-none focus:border-gold transition-colors text-sm"
+                          className="w-full pl-10 pr-4 py-3 bg-dark-900 border border-dark-700 rounded-lg text-white placeholder-dark-400 focus:outline-none focus:border-gold transition-colors text-sm"
                           required
                         />
                       </div>
@@ -748,49 +758,49 @@ const AdminDashboard = () => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-dark-500 uppercase tracking-widest mb-2">Endereço Físico</label>
+                    <label className="block text-xs font-semibold text-dark-300 uppercase tracking-widest mb-2">Endereço Físico</label>
                     <div className="relative">
-                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-500" />
+                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-400" />
                       <input
                         type="text"
                         placeholder="Av. Paulista, 1000 - São Paulo"
                         value={settings.address}
                         onChange={(e) => setSettings({ ...settings, address: e.target.value })}
-                        className="w-full pl-10 pr-4 py-3 bg-dark-900 border border-dark-700 rounded-lg text-white placeholder-dark-500 focus:outline-none focus:border-gold transition-colors text-sm"
+                        className="w-full pl-10 pr-4 py-3 bg-dark-900 border border-dark-700 rounded-lg text-white placeholder-dark-400 focus:outline-none focus:border-gold transition-colors text-sm"
                         required
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-dark-500 uppercase tracking-widest mb-2">Horário de Funcionamento</label>
+                    <label className="block text-xs font-semibold text-dark-300 uppercase tracking-widest mb-2">Horário de Funcionamento</label>
                     <div className="relative">
-                      <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-500" />
+                      <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-400" />
                       <input
                         type="text"
                         placeholder="Seg a Sex: 09h às 21h | Sáb: 09h às 19h"
                         value={settings.openingHours}
                         onChange={(e) => setSettings({ ...settings, openingHours: e.target.value })}
-                        className="w-full pl-10 pr-4 py-3 bg-dark-900 border border-dark-700 rounded-lg text-white placeholder-dark-500 focus:outline-none focus:border-gold transition-colors text-sm"
+                        className="w-full pl-10 pr-4 py-3 bg-dark-900 border border-dark-700 rounded-lg text-white placeholder-dark-400 focus:outline-none focus:border-gold transition-colors text-sm"
                         required
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-dark-500 uppercase tracking-widest mb-2">Modelo de Mensagem do WhatsApp</label>
+                    <label className="block text-xs font-semibold text-dark-300 uppercase tracking-widest mb-2">Modelo de Mensagem do WhatsApp</label>
                     <div className="relative">
-                      <FileText className="absolute left-3 top-3 w-5 h-5 text-dark-500" />
+                      <FileText className="absolute left-3 top-3 w-5 h-5 text-dark-400" />
                       <textarea
                         rows="3"
                         placeholder="Insira o texto base de confirmação..."
                         value={settings.whatsappMessageTemplate}
                         onChange={(e) => setSettings({ ...settings, whatsappMessageTemplate: e.target.value })}
-                        className="w-full pl-10 pr-4 py-3 bg-dark-900 border border-dark-700 rounded-lg text-white placeholder-dark-500 focus:outline-none focus:border-gold transition-colors text-sm font-sans"
+                        className="w-full pl-10 pr-4 py-3 bg-dark-900 border border-dark-700 rounded-lg text-white placeholder-dark-400 focus:outline-none focus:border-gold transition-colors text-sm font-sans"
                         required
                       ></textarea>
                     </div>
-                    <p className="text-[10px] text-dark-500 mt-1">
+                    <p className="text-[10px] text-dark-400 mt-1 font-medium">
                       Variáveis permitidas: <code className="text-gold">{`{data}`}</code>, <code className="text-gold">{`{hora}`}</code>, <code className="text-gold">{`{barbeiro}`}</code>, <code className="text-gold">{`{servico}`}</code>, <code className="text-gold">{`{unidade}`}</code>.
                     </p>
                   </div>
@@ -799,7 +809,7 @@ const AdminDashboard = () => {
                     <div className="flex items-center justify-between">
                       <div>
                         <h3 className="text-lg font-bold text-gold uppercase tracking-wider">Gestão de Unidades</h3>
-                        <p className="text-dark-500 text-xs mt-0.5">Cadastre e gerencie as filiais físicas da barbearia</p>
+                        <p className="text-dark-400 text-xs mt-0.5 font-medium">Cadastre e gerencie as filiais físicas da barbearia</p>
                       </div>
                       <button
                         type="button"
@@ -819,7 +829,7 @@ const AdminDashboard = () => {
                             <button
                               type="button"
                               onClick={() => handleRemoveBranch(index)}
-                              className="p-1.5 rounded-lg bg-dark-950 text-dark-500 hover:text-red-400 hover:bg-red-950/20 transition-all flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider"
+                              className="p-1.5 rounded-lg bg-dark-950 text-dark-400 hover:text-red-400 hover:bg-red-950/20 transition-all flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider cursor-pointer"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                               Remover
@@ -828,7 +838,7 @@ const AdminDashboard = () => {
 
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                              <label className="block text-[10px] font-bold text-dark-500 uppercase tracking-widest mb-1.5">Nome da Unidade</label>
+                              <label className="block text-[10px] font-bold text-dark-300 uppercase tracking-widest mb-1.5">Nome da Unidade</label>
                               <input
                                 type="text"
                                 placeholder="Ex: Unidade Jardins"
@@ -840,7 +850,7 @@ const AdminDashboard = () => {
                             </div>
 
                             <div>
-                              <label className="block text-[10px] font-bold text-dark-500 uppercase tracking-widest mb-1.5">WhatsApp de Agendamento</label>
+                              <label className="block text-[10px] font-bold text-dark-300 uppercase tracking-widest mb-1.5">WhatsApp de Agendamento</label>
                               <input
                                 type="text"
                                 placeholder="Ex: 5516994206778"
@@ -854,41 +864,41 @@ const AdminDashboard = () => {
 
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                              <label className="block text-[10px] font-bold text-dark-500 uppercase tracking-widest mb-1.5">Endereço</label>
+                              <label className="block text-[10px] font-bold text-dark-300 uppercase tracking-widest mb-1.5">Endereço</label>
                               <input
                                 type="text"
                                 placeholder="Ex: Alameda Lorena, 1500 - Jardins"
                                 value={branch.address}
                                 onChange={(e) => handleUpdateBranchField(index, 'address', e.target.value)}
-                                className="w-full px-4 py-2.5 bg-dark-950 border border-dark-700 rounded-lg text-white focus:outline-none focus:border-gold text-xs"
+                                className="w-full px-4 py-2.5 bg-dark-950 border border-dark-700 rounded-lg text-white focus:outline-none focus:border-gold text-xs placeholder-dark-400/80 transition-colors"
                                 required
                               />
                             </div>
 
                             <div>
-                              <label className="block text-[10px] font-bold text-dark-500 uppercase tracking-widest mb-1.5">Horário de Funcionamento</label>
+                              <label className="block text-[10px] font-bold text-dark-300 uppercase tracking-widest mb-1.5">Horário de Funcionamento</label>
                               <input
                                 type="text"
                                 placeholder="Ex: Seg a Sex: 10h às 22h | Sáb: 09h às 20h"
                                 value={branch.openingHours}
                                 onChange={(e) => handleUpdateBranchField(index, 'openingHours', e.target.value)}
-                                className="w-full px-4 py-2.5 bg-dark-950 border border-dark-700 rounded-lg text-white focus:outline-none focus:border-gold text-xs"
+                                className="w-full px-4 py-2.5 bg-dark-950 border border-dark-700 rounded-lg text-white focus:outline-none focus:border-gold text-xs placeholder-dark-400/80 transition-colors"
                                 required
                               />
                             </div>
                           </div>
 
                           <div>
-                            <label className="block text-[10px] font-bold text-dark-500 uppercase tracking-widest mb-1.5">Google Maps Embed URL (iframe src)</label>
+                            <label className="block text-[10px] font-bold text-dark-300 uppercase tracking-widest mb-1.5">Google Maps Embed URL (iframe src)</label>
                             <input
                               type="text"
                               placeholder="Ex: https://www.google.com/maps/embed?pb=..."
                               value={branch.googleMapsEmbedUrl}
                               onChange={(e) => handleUpdateBranchField(index, 'googleMapsEmbedUrl', e.target.value)}
-                              className="w-full px-4 py-2.5 bg-dark-950 border border-dark-700 rounded-lg text-white focus:outline-none focus:border-gold text-xs font-mono"
+                              className="w-full px-4 py-2.5 bg-dark-950 border border-dark-700 rounded-lg text-white focus:outline-none focus:border-gold text-xs font-mono placeholder-dark-400/80 transition-colors"
                               required
                             />
-                            <p className="text-[9px] text-dark-500 mt-1">Insira apenas o link contido no atributo <code className="text-gold">src="..."</code> do código de incorporar do Google Maps.</p>
+                            <p className="text-[9px] text-dark-400 mt-1 font-medium">Insira apenas o link contido no atributo <code className="text-gold">src="..."</code> do código de incorporar do Google Maps.</p>
                           </div>
                         </div>
                       ))}
@@ -927,9 +937,9 @@ const AdminDashboard = () => {
               </h3>
               <button 
                 onClick={closeModal} 
-                className="p-1 rounded hover:bg-dark-800 transition-colors"
+                className="p-1 rounded hover:bg-dark-800 transition-colors cursor-pointer"
               >
-                <X className="w-5 h-5 text-dark-500 hover:text-white" />
+                <X className="w-5 h-5 text-dark-400 hover:text-white" />
               </button>
             </div>
 
@@ -941,44 +951,44 @@ const AdminDashboard = () => {
                 {modalType === 'service' && (
                   <>
                     <div>
-                      <label className="block text-xs font-semibold text-dark-500 uppercase tracking-widest mb-1">Nome do Serviço</label>
+                      <label className="block text-xs font-semibold text-dark-300 uppercase tracking-widest mb-1">Nome do Serviço</label>
                       <input 
                         type="text"
                         value={serviceForm.name}
                         onChange={(e) => setServiceForm({ ...serviceForm, name: e.target.value })}
-                        className="w-full px-4 py-2.5 bg-dark-900 border border-dark-700 rounded-lg text-white focus:outline-none focus:border-gold transition-colors text-sm"
+                        className="w-full px-4 py-2.5 bg-dark-900 border border-dark-700 rounded-lg text-white placeholder-dark-400 focus:outline-none focus:border-gold transition-colors text-sm"
                         required
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs font-semibold text-dark-500 uppercase tracking-widest mb-1">Preço (R$)</label>
+                        <label className="block text-xs font-semibold text-dark-300 uppercase tracking-widest mb-1">Preço (R$)</label>
                         <input 
                           type="number"
                           value={serviceForm.price}
                           onChange={(e) => setServiceForm({ ...serviceForm, price: e.target.value })}
-                          className="w-full px-4 py-2.5 bg-dark-900 border border-dark-700 rounded-lg text-white focus:outline-none focus:border-gold transition-colors text-sm"
+                          className="w-full px-4 py-2.5 bg-dark-900 border border-dark-700 rounded-lg text-white placeholder-dark-400 focus:outline-none focus:border-gold transition-colors text-sm"
                           required
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-dark-500 uppercase tracking-widest mb-1">Duração (minutos)</label>
+                        <label className="block text-xs font-semibold text-dark-300 uppercase tracking-widest mb-1">Duração (minutos)</label>
                         <input 
                           type="number"
                           value={serviceForm.duration}
                           onChange={(e) => setServiceForm({ ...serviceForm, duration: e.target.value })}
-                          className="w-full px-4 py-2.5 bg-dark-900 border border-dark-700 rounded-lg text-white focus:outline-none focus:border-gold transition-colors text-sm"
+                          className="w-full px-4 py-2.5 bg-dark-900 border border-dark-700 rounded-lg text-white placeholder-dark-400 focus:outline-none focus:border-gold transition-colors text-sm"
                           required
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-dark-500 uppercase tracking-widest mb-1">Descrição</label>
+                      <label className="block text-xs font-semibold text-dark-300 uppercase tracking-widest mb-1">Descrição</label>
                       <textarea 
                         rows="3"
                         value={serviceForm.description}
                         onChange={(e) => setServiceForm({ ...serviceForm, description: e.target.value })}
-                        className="w-full px-4 py-2.5 bg-dark-900 border border-dark-700 rounded-lg text-white focus:outline-none focus:border-gold transition-colors text-sm font-sans"
+                        className="w-full px-4 py-2.5 bg-dark-900 border border-dark-700 rounded-lg text-white placeholder-dark-400 focus:outline-none focus:border-gold transition-colors text-sm font-sans"
                         required
                       ></textarea>
                     </div>
@@ -990,7 +1000,7 @@ const AdminDashboard = () => {
                         onChange={(e) => setServiceForm({ ...serviceForm, active: e.target.checked })}
                         className="w-4 h-4 rounded border-dark-700 text-gold focus:ring-gold accent-gold"
                       />
-                      <label htmlFor="service-active" className="text-xs font-semibold text-dark-500 uppercase tracking-widest cursor-pointer select-none">Serviço Ativo (Exibir na tela)</label>
+                      <label htmlFor="service-active" className="text-xs font-semibold text-dark-300 uppercase tracking-widest cursor-pointer select-none">Serviço Ativo (Exibir na tela)</label>
                     </div>
                   </>
                 )}
@@ -999,29 +1009,48 @@ const AdminDashboard = () => {
                 {modalType === 'employee' && (
                   <>
                     <div>
-                      <label className="block text-xs font-semibold text-dark-500 uppercase tracking-widest mb-1">Nome Completo</label>
+                      <label className="block text-xs font-semibold text-dark-300 uppercase tracking-widest mb-1">Nome Completo</label>
                       <input 
                         type="text"
                         value={employeeForm.name}
                         onChange={(e) => setEmployeeForm({ ...employeeForm, name: e.target.value })}
-                        className="w-full px-4 py-2.5 bg-dark-900 border border-dark-700 rounded-lg text-white focus:outline-none focus:border-gold transition-colors text-sm"
+                        className="w-full px-4 py-2.5 bg-dark-900 border border-dark-700 rounded-lg text-white placeholder-dark-400 focus:outline-none focus:border-gold transition-colors text-sm"
                         required
                       />
                     </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-dark-300 uppercase tracking-widest mb-1">Unidade / Filial</label>
+                      <select 
+                        value={employeeForm.branchId || 'br1'}
+                        onChange={(e) => {
+                          const selectedBranch = settings.branches?.find(b => b.id === e.target.value) || { name: 'Barbearia Flores - Benassi' };
+                          setEmployeeForm({ 
+                            ...employeeForm, 
+                            branchId: e.target.value, 
+                            branchName: selectedBranch.name 
+                          });
+                        }}
+                        className="w-full px-4 py-2.5 bg-dark-900 border border-dark-700 rounded-lg text-white focus:outline-none focus:border-gold transition-colors text-sm cursor-pointer"
+                      >
+                        {settings.branches?.map(b => (
+                          <option key={b.id} value={b.id}>{b.name}</option>
+                        ))}
+                      </select>
+                    </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs font-semibold text-dark-500 uppercase tracking-widest mb-1">Cargo / Especialidade</label>
+                        <label className="block text-xs font-semibold text-dark-300 uppercase tracking-widest mb-1">Cargo / Especialidade</label>
                         <input 
                           type="text"
                           placeholder="Mestre Barbeiro"
                           value={employeeForm.role}
                           onChange={(e) => setEmployeeForm({ ...employeeForm, role: e.target.value })}
-                          className="w-full px-4 py-2.5 bg-dark-900 border border-dark-700 rounded-lg text-white focus:outline-none focus:border-gold transition-colors text-sm"
+                          className="w-full px-4 py-2.5 bg-dark-900 border border-dark-700 rounded-lg text-white placeholder-dark-400 focus:outline-none focus:border-gold transition-colors text-sm"
                           required
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-dark-500 uppercase tracking-widest mb-1">Avaliação (1 a 5)</label>
+                        <label className="block text-xs font-semibold text-dark-300 uppercase tracking-widest mb-1">Avaliação (1 a 5)</label>
                         <input 
                           type="number"
                           step="0.1"
@@ -1029,32 +1058,32 @@ const AdminDashboard = () => {
                           max="5"
                           value={employeeForm.rating}
                           onChange={(e) => setEmployeeForm({ ...employeeForm, rating: e.target.value })}
-                          className="w-full px-4 py-2.5 bg-dark-900 border border-dark-700 rounded-lg text-white focus:outline-none focus:border-gold transition-colors text-sm"
+                          className="w-full px-4 py-2.5 bg-dark-900 border border-dark-700 rounded-lg text-white placeholder-dark-400 focus:outline-none focus:border-gold transition-colors text-sm"
                           required
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-dark-500 uppercase tracking-widest mb-1">Bio / Resumo</label>
+                      <label className="block text-xs font-semibold text-dark-300 uppercase tracking-widest mb-1">Bio / Resumo</label>
                       <textarea 
                         rows="2"
                         value={employeeForm.bio}
                         onChange={(e) => setEmployeeForm({ ...employeeForm, bio: e.target.value })}
-                        className="w-full px-4 py-2.5 bg-dark-900 border border-dark-700 rounded-lg text-white focus:outline-none focus:border-gold transition-colors text-sm font-sans"
+                        className="w-full px-4 py-2.5 bg-dark-900 border border-dark-700 rounded-lg text-white placeholder-dark-400 focus:outline-none focus:border-gold transition-colors text-sm font-sans"
                         required
                       ></textarea>
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-dark-500 uppercase tracking-widest mb-2">Foto de Perfil</label>
+                      <label className="block text-xs font-semibold text-dark-300 uppercase tracking-widest mb-2">Foto de Perfil</label>
                       <div className="flex gap-4 items-center">
                         <div className="w-16 h-16 rounded-lg bg-dark-900 border border-dark-700 overflow-hidden flex items-center justify-center shrink-0">
                           {uploadPreview || employeeForm.photo ? (
                             <img src={uploadPreview || employeeForm.photo} alt="Preview" className="w-full h-full object-cover" />
                           ) : (
-                            <User className="w-8 h-8 text-dark-500" />
+                            <User className="w-8 h-8 text-dark-400" />
                           )}
                         </div>
-                        <label className="flex-1 flex flex-col items-center justify-center px-4 py-3 bg-dark-900 border border-dashed border-dark-700 rounded-lg cursor-pointer hover:border-gold transition-colors text-xs text-dark-500 font-semibold gap-1.5">
+                        <label className="flex-1 flex flex-col items-center justify-center px-4 py-3 bg-dark-900 border border-dashed border-dark-700 rounded-lg cursor-pointer hover:border-gold transition-colors text-xs text-dark-400 font-semibold gap-1.5">
                           <Upload className="w-4 h-4 text-gold" />
                           <span>Selecionar Imagem (PNG/JPG)</span>
                           <input type="file" onChange={handleFileChange} className="hidden" accept="image/*" />
@@ -1069,21 +1098,21 @@ const AdminDashboard = () => {
                   <>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs font-semibold text-dark-500 uppercase tracking-widest mb-1">Nome do Cliente</label>
+                        <label className="block text-xs font-semibold text-dark-300 uppercase tracking-widest mb-1">Nome do Cliente</label>
                         <input 
                           type="text"
                           value={testimonialForm.name}
                           onChange={(e) => setTestimonialForm({ ...testimonialForm, name: e.target.value })}
-                          className="w-full px-4 py-2.5 bg-dark-900 border border-dark-700 rounded-lg text-white focus:outline-none focus:border-gold transition-colors text-sm"
+                          className="w-full px-4 py-2.5 bg-dark-900 border border-dark-700 rounded-lg text-white placeholder-dark-400 focus:outline-none focus:border-gold transition-colors text-sm"
                           required
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-dark-500 uppercase tracking-widest mb-1">Nota (Estrelas)</label>
+                        <label className="block text-xs font-semibold text-dark-300 uppercase tracking-widest mb-1">Nota (Estrelas)</label>
                         <select
                           value={testimonialForm.rating}
                           onChange={(e) => setTestimonialForm({ ...testimonialForm, rating: e.target.value })}
-                          className="w-full px-4 py-2.5 bg-dark-900 border border-dark-700 rounded-lg text-white focus:outline-none focus:border-gold transition-colors text-sm"
+                          className="w-full px-4 py-2.5 bg-dark-900 border border-dark-700 rounded-lg text-white focus:outline-none focus:border-gold transition-colors text-sm cursor-pointer"
                           required
                         >
                           <option value="5">5 Estrelas</option>
@@ -1095,12 +1124,12 @@ const AdminDashboard = () => {
                       </div>
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-dark-500 uppercase tracking-widest mb-1">Texto do Depoimento</label>
+                      <label className="block text-xs font-semibold text-dark-300 uppercase tracking-widest mb-1">Texto do Depoimento</label>
                       <textarea 
                         rows="3"
                         value={testimonialForm.text}
                         onChange={(e) => setTestimonialForm({ ...testimonialForm, text: e.target.value })}
-                        className="w-full px-4 py-2.5 bg-dark-900 border border-dark-700 rounded-lg text-white focus:outline-none focus:border-gold transition-colors text-sm font-sans"
+                        className="w-full px-4 py-2.5 bg-dark-900 border border-dark-700 rounded-lg text-white placeholder-dark-400 focus:outline-none focus:border-gold transition-colors text-sm font-sans"
                         required
                       ></textarea>
                     </div>
@@ -1112,21 +1141,21 @@ const AdminDashboard = () => {
                   <>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs font-semibold text-dark-500 uppercase tracking-widest mb-1">Título da Imagem</label>
+                        <label className="block text-xs font-semibold text-dark-300 uppercase tracking-widest mb-1">Título da Imagem</label>
                         <input 
                           type="text"
                           value={galleryForm.title}
                           onChange={(e) => setGalleryForm({ ...galleryForm, title: e.target.value })}
-                          className="w-full px-4 py-2.5 bg-dark-900 border border-dark-700 rounded-lg text-white focus:outline-none focus:border-gold transition-colors text-sm"
+                          className="w-full px-4 py-2.5 bg-dark-900 border border-dark-700 rounded-lg text-white placeholder-dark-400 focus:outline-none focus:border-gold transition-colors text-sm"
                           required
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-dark-500 uppercase tracking-widest mb-1">Categoria</label>
+                        <label className="block text-xs font-semibold text-dark-300 uppercase tracking-widest mb-1">Categoria</label>
                         <select
                           value={galleryForm.category}
                           onChange={(e) => setGalleryForm({ ...galleryForm, category: e.target.value })}
-                          className="w-full px-4 py-2.5 bg-dark-900 border border-dark-700 rounded-lg text-white focus:outline-none focus:border-gold transition-colors text-sm"
+                          className="w-full px-4 py-2.5 bg-dark-900 border border-dark-700 rounded-lg text-white focus:outline-none focus:border-gold transition-colors text-sm cursor-pointer"
                           required
                         >
                           <option value="Corte">Corte</option>
@@ -1137,16 +1166,16 @@ const AdminDashboard = () => {
                       </div>
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-dark-500 uppercase tracking-widest mb-2">Carregar Imagem</label>
+                      <label className="block text-xs font-semibold text-dark-300 uppercase tracking-widest mb-2">Carregar Imagem</label>
                       <div className="flex gap-4 items-center">
                         <div className="w-16 h-16 rounded-lg bg-dark-900 border border-dark-700 overflow-hidden flex items-center justify-center shrink-0">
                           {uploadPreview || galleryForm.image ? (
                             <img src={uploadPreview || galleryForm.image} alt="Preview" className="w-full h-full object-cover" />
                           ) : (
-                            <Image className="w-8 h-8 text-dark-500" />
+                            <Image className="w-8 h-8 text-dark-400" />
                           )}
                         </div>
-                        <label className="flex-1 flex flex-col items-center justify-center px-4 py-3 bg-dark-900 border border-dashed border-dark-700 rounded-lg cursor-pointer hover:border-gold transition-colors text-xs text-dark-500 font-semibold gap-1.5">
+                        <label className="flex-1 flex flex-col items-center justify-center px-4 py-3 bg-dark-900 border border-dashed border-dark-700 rounded-lg cursor-pointer hover:border-gold transition-colors text-xs text-dark-400 font-semibold gap-1.5">
                           <Upload className="w-4 h-4 text-gold" />
                           <span>Fazer Upload (PNG/JPG)</span>
                           <input type="file" onChange={handleFileChange} className="hidden" accept="image/*" />
@@ -1164,7 +1193,7 @@ const AdminDashboard = () => {
                   type="button"
                   onClick={closeModal}
                   disabled={actionLoading}
-                  className="px-5 py-2.5 rounded-lg border border-dark-700 text-xs uppercase font-semibold text-dark-500 hover:text-white hover:bg-dark-800 transition-all"
+                  className="px-5 py-2.5 rounded-lg border border-dark-700 text-xs uppercase font-bold text-dark-400 hover:text-white hover:bg-dark-800 transition-all cursor-pointer"
                 >
                   Cancelar
                 </button>

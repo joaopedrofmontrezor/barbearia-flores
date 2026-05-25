@@ -46,15 +46,15 @@ const ServiceCard = ({ service, onBook, onEdit, onDelete, isAdmin = false }) => 
         </div>
 
         {/* Descrição do serviço */}
-        <p className="text-xs text-dark-500 leading-relaxed font-light mb-6 min-h-[50px] line-clamp-3 group-hover:text-dark-400 transition-colors">
+        <p className="text-xs text-dark-300 leading-relaxed font-light mb-6 min-h-[50px] line-clamp-3 group-hover:text-dark-100 transition-colors">
           {description || "Serviço exclusivo de beleza e estética masculina executado com excelência."}
         </p>
       </div>
 
       {/* Rodapé do Card: Duração e Ações */}
       <div className="flex items-center justify-between pt-5 border-t border-dark-950">
-        <div className="flex items-center gap-2 text-xs text-dark-500 font-semibold group-hover:text-dark-400 transition-colors">
-          <Clock className="w-4 h-4 text-gold/70" />
+        <div className="flex items-center gap-2 text-xs text-dark-300 font-semibold group-hover:text-dark-100 transition-colors">
+          <Clock className="w-4 h-4 text-gold" />
           <span>{duration || 30} min</span>
         </div>
 

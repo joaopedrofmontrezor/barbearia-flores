@@ -105,7 +105,7 @@ const AdminLogin = () => {
             <Scissors className="w-8 h-8 text-gold" />
           </div>
           <h1 className="text-2xl font-bold font-title text-gold uppercase tracking-wider">Painel Admin</h1>
-          <p className="text-dark-500 text-xs mt-1 uppercase tracking-widest">Acesso Restrito</p>
+          <p className="text-dark-400 text-xs mt-1 uppercase tracking-widest font-semibold">Acesso Restrito</p>
         </div>
 
 
@@ -120,15 +120,15 @@ const AdminLogin = () => {
         {/* Login Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-xs font-semibold text-dark-500 uppercase tracking-widest mb-2">E-mail</label>
+            <label className="block text-xs font-semibold text-dark-300 uppercase tracking-widest mb-2">E-mail</label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-500" />
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-400" />
               <input
                 type="email"
                 placeholder="admin@barbeariaflores.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-dark-900 border border-dark-700 rounded-lg text-white placeholder-dark-500 focus:outline-none focus:border-gold transition-colors text-sm"
+                className="w-full pl-10 pr-4 py-3 bg-dark-900 border border-dark-700 rounded-lg text-white placeholder-dark-400 focus:outline-none focus:border-gold transition-colors text-sm"
                 required
                 disabled={lockoutTime > 0}
               />
@@ -136,22 +136,22 @@ const AdminLogin = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-dark-500 uppercase tracking-widest mb-2">Senha</label>
+            <label className="block text-xs font-semibold text-dark-300 uppercase tracking-widest mb-2">Senha</label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-500" />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-400" />
               <input
                 type={showPassword ? 'text' : 'password'}
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-10 pr-10 py-3 bg-dark-900 border border-dark-700 rounded-lg text-white placeholder-dark-500 focus:outline-none focus:border-gold transition-colors text-sm"
+                className="w-full pl-10 pr-10 py-3 bg-dark-900 border border-dark-700 rounded-lg text-white placeholder-dark-400 focus:outline-none focus:border-gold transition-colors text-sm"
                 required
                 disabled={lockoutTime > 0}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-dark-500 hover:text-gold transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-dark-400 hover:text-gold transition-colors"
                 disabled={lockoutTime > 0}
               >
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -178,7 +178,7 @@ const AdminLogin = () => {
         <div className="mt-8 text-center">
           <button 
             onClick={() => navigate('/')} 
-            className="text-xs text-dark-500 hover:text-gold transition-colors uppercase tracking-widest font-semibold cursor-pointer"
+            className="text-xs text-dark-400 hover:text-gold transition-colors uppercase tracking-widest font-semibold cursor-pointer"
           >
             Voltar para o site principal
           </button>

@@ -399,7 +399,7 @@ const LandingPage = () => {
             </button>
             <button 
               onClick={() => navigate('/admin')} 
-              className="px-4 py-2.5 text-xs text-dark-500 hover:text-gold uppercase tracking-widest transition-colors font-semibold"
+              className="px-4 py-2.5 text-xs text-dark-400 hover:text-gold uppercase tracking-widest transition-colors font-semibold"
             >
               ADMIN
             </button>
@@ -451,7 +451,7 @@ const LandingPage = () => {
               </button>
               <button 
                 onClick={() => { setMobileMenuOpen(false); navigate('/admin'); }} 
-                className="w-full py-4 text-xs bg-dark-900 border border-dark-800 rounded-lg text-dark-500 uppercase tracking-widest text-center"
+                className="w-full py-4 text-xs bg-dark-900 border border-dark-800 text-dark-400 hover:text-gold uppercase tracking-widest text-center transition-colors"
               >
                 Painel Admin
               </button>
@@ -491,7 +491,7 @@ const LandingPage = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-sm md:text-lg text-dark-500 max-w-2xl mx-auto tracking-wide leading-relaxed font-light"
+            className="text-sm md:text-lg text-dark-300 max-w-2xl mx-auto tracking-wide leading-relaxed font-light"
           >
             Mais do que um corte de cabelo e barba. Um templo de estética masculina, café expresso, cerveja gelada e os melhores visagistas da região.
           </motion.p>
@@ -518,8 +518,8 @@ const LandingPage = () => {
         </div>
 
         {/* Scroll indicator mouse */}
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-dark-500 cursor-pointer" onClick={() => scrollToId('sobre')}>
-          <span className="text-[10px] tracking-widest uppercase font-semibold text-gold/60">Descubra</span>
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-dark-400 cursor-pointer" onClick={() => scrollToId('sobre')}>
+          <span className="text-[10px] tracking-widest uppercase font-semibold text-gold/80">Descubra</span>
           <div className="w-6 h-10 border-2 border-gold/30 rounded-full flex justify-center p-1.5">
             <motion.div 
               animate={{ y: [0, 12, 0] }} 
@@ -544,10 +544,10 @@ const LandingPage = () => {
               <h2 className="text-3xl md:text-5xl font-bold font-title text-white uppercase tracking-wider leading-tight">
                 UM CONCEITO <span className="text-gold-gradient">PREMIUM</span> DE ESTÉTICA MASCULINA
               </h2>
-              <p className="text-sm text-dark-500 leading-relaxed font-light">
+              <p className="text-sm text-dark-300 leading-relaxed font-light">
                 Fundada em 2018 com o propósito de redefinir o cuidado pessoal masculino, a Barbearia Flores combina técnicas tradicionais de barbearia clássica com as maiores tendências internacionais de corte e visagismo.
               </p>
-              <p className="text-sm text-dark-500 leading-relaxed font-light">
+              <p className="text-sm text-dark-300 leading-relaxed font-light">
                 Nosso espaço foi projetado para oferecer um refúgio de relaxamento para o homem moderno. Cada atendimento é um ritual exclusivo, acompanhado de bebidas premium selecionadas, toalha quente e óleos aromáticos essenciais.
               </p>
 
@@ -560,7 +560,7 @@ const LandingPage = () => {
                 ].map((stat, i) => (
                   <div key={i} className="text-center sm:text-left">
                     <h4 className="text-2xl md:text-4xl font-bold font-sans text-gold">{stat.value}</h4>
-                    <p className="text-[10px] md:text-xs text-dark-500 uppercase tracking-wider mt-1">{stat.label}</p>
+                    <p className="text-[10px] md:text-xs text-dark-400 uppercase tracking-wider mt-1">{stat.label}</p>
                   </div>
                 ))}
               </div>
@@ -616,7 +616,7 @@ const LandingPage = () => {
                 </div>
 
               </div>
-              <p className="text-center text-[10px] text-dark-500 uppercase tracking-widest">
+              <p className="text-center text-[10px] text-dark-400 uppercase tracking-widest">
                 Deslize o marcador acima para comparar nossos estilos
               </p>
             </div>
@@ -634,7 +634,7 @@ const LandingPage = () => {
               NOSSOS SERVIÇOS
             </h2>
             <div className="w-16 h-[2px] bg-gold mx-auto"></div>
-            <p className="text-sm text-dark-500 font-light">
+            <p className="text-sm text-dark-300 font-light">
               Escolha serviços isolados ou aproveite nossos combos especiais com descontos exclusivos.
             </p>
           </div>
@@ -689,7 +689,7 @@ const LandingPage = () => {
                 className={`px-6 py-2.5 rounded-full text-xs font-semibold tracking-wider uppercase transition-all ${
                   activeCategory === cat 
                     ? 'bg-gold text-dark-950 font-bold shadow-gold-glow' 
-                    : 'bg-dark-900 border border-dark-800 text-dark-500 hover:text-white hover:border-gold/30'
+                    : 'bg-dark-900 border border-dark-800 text-dark-400 hover:text-white hover:border-gold/30'
                 }`}
               >
                 {cat}
@@ -762,7 +762,7 @@ const LandingPage = () => {
               NOSSOS BARBEIROS
             </h2>
             <div className="w-16 h-[2px] bg-gold mx-auto"></div>
-            <p className="text-sm text-dark-500 font-light">
+            <p className="text-sm text-dark-300 font-light">
               Mestres em visagismo e cuidados masculinos prontos para elevar sua autoestima.
             </p>
           </div>
@@ -792,7 +792,7 @@ const LandingPage = () => {
                     <span className="text-xs text-gold font-semibold uppercase tracking-widest">
                       {item.role}
                     </span>
-                    <p className="text-xs text-dark-500 mt-4 leading-relaxed font-light">
+                    <p className="text-xs text-dark-300 mt-4 leading-relaxed font-light">
                       {item.bio}
                     </p>
                   </div>
@@ -835,7 +835,7 @@ const LandingPage = () => {
 
           <div className="glass-card rounded-2xl border border-gold/10 overflow-hidden shadow-2xl">
             {/* Step Wizard Header Indicator */}
-            <div className="bg-dark-900/60 border-b border-dark-800 px-6 py-4 flex items-center justify-between text-xs font-bold tracking-widest uppercase text-dark-500">
+            <div className="bg-dark-900/60 border-b border-dark-800 px-6 py-4 flex items-center justify-between text-xs font-bold tracking-widest uppercase text-dark-400">
               <div className="flex gap-2.5 items-center overflow-x-auto w-full">
                 {[
                   { step: 1, label: 'Unidade' },
@@ -850,7 +850,7 @@ const LandingPage = () => {
                         ? 'bg-gold text-dark-950 shadow-gold-glow font-extrabold' 
                         : bookingStep > s.step 
                           ? 'bg-green-500/10 text-green-400 border border-green-500/20' 
-                          : 'bg-dark-800 text-dark-500'
+                          : 'bg-dark-800 text-dark-400'
                     }`}>
                       {bookingStep > s.step ? <Check className="w-3 h-3" /> : s.step}
                     </span>
@@ -898,7 +898,7 @@ const LandingPage = () => {
                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-3 duration-300">
                   <div className="flex justify-between items-center">
                     <h3 className="font-title text-gold uppercase tracking-wider text-sm">Selecione o Barbeiro de sua Preferência</h3>
-                    <button onClick={() => setBookingStep(1)} className="text-[10px] text-dark-500 hover:text-gold uppercase tracking-widest font-semibold">
+                    <button onClick={() => setBookingStep(1)} className="text-[10px] text-dark-400 hover:text-gold uppercase tracking-widest font-semibold transition-colors">
                       Voltar
                     </button>
                   </div>
@@ -917,12 +917,12 @@ const LandingPage = () => {
                       </div>
                       <div>
                         <h4 className="font-bold text-sm text-white">Qualquer Profissional</h4>
-                        <p className="text-[10px] text-dark-500 uppercase mt-0.5 tracking-wider">Menor tempo de espera</p>
+                        <p className="text-[10px] text-dark-400 uppercase mt-0.5 tracking-wider font-semibold">Menor tempo de espera</p>
                       </div>
                     </button>
 
                     {/* DB staff list */}
-                    {employees.map(emp => (
+                    {employees.filter(emp => emp.branchId === bookingForm.branchId).map(emp => (
                       <button
                         key={emp.id}
                         onClick={() => selectEmployee(emp)}
@@ -958,29 +958,46 @@ const LandingPage = () => {
                           setBookingStep(2);
                         }
                       }} 
-                      className="text-[10px] text-dark-500 hover:text-gold uppercase tracking-widest font-semibold"
+                      className="text-[10px] text-dark-400 hover:text-gold uppercase tracking-widest font-semibold transition-colors"
                     >
                       Voltar
                     </button>
                   </div>
                   <div className="space-y-3">
-                    {services.map(srv => (
-                      <button
-                        key={srv.id}
-                        onClick={() => selectService(srv)}
-                        className={`w-full p-4 rounded-xl border text-left flex items-center justify-between gap-4 transition-all ${
-                          bookingForm.serviceId === srv.id 
-                            ? 'bg-gold/10 border-gold/80 text-gold shadow-gold-glow' 
-                            : 'bg-dark-900 border-dark-800 hover:border-gold/30 hover:bg-dark-800'
-                        }`}
-                      >
-                        <div>
-                          <h4 className="font-bold text-sm text-white">{srv.name}</h4>
-                          <span className="text-[10px] text-dark-500 font-semibold uppercase tracking-wider">{srv.duration} minutos</span>
-                        </div>
-                        <span className="font-bold text-sm text-gold">R$ {srv.price}</span>
-                      </button>
-                    ))}
+                    {(() => {
+                      const selectedEmp = employees.find(e => e.id === bookingForm.employeeId);
+                      const availableServices = services.filter(srv => 
+                        bookingForm.employeeId === 'any' || 
+                        !bookingForm.employeeId ||
+                        (selectedEmp && selectedEmp.allowedServices?.includes(srv.id))
+                      );
+                      
+                      if (availableServices.length === 0) {
+                        return (
+                          <div className="text-center py-6 text-dark-300 text-xs font-medium">
+                            Nenhum serviço disponível com este profissional no momento.
+                          </div>
+                        );
+                      }
+                      
+                      return availableServices.map(srv => (
+                        <button
+                          key={srv.id}
+                          onClick={() => selectService(srv)}
+                          className={`w-full p-4 rounded-xl border text-left flex items-center justify-between gap-4 transition-all ${
+                            bookingForm.serviceId === srv.id 
+                              ? 'bg-gold/10 border-gold/80 text-gold shadow-gold-glow' 
+                              : 'bg-dark-900 border-dark-800 hover:border-gold/30 hover:bg-dark-800'
+                          }`}
+                        >
+                          <div>
+                            <h4 className="font-bold text-sm text-white">{srv.name}</h4>
+                            <span className="text-[10px] text-dark-300 font-semibold uppercase tracking-wider">{srv.duration} minutos</span>
+                          </div>
+                          <span className="font-bold text-sm text-gold">R$ {srv.price}</span>
+                        </button>
+                      ));
+                    })()}
                   </div>
                 </div>
               )}
@@ -990,13 +1007,13 @@ const LandingPage = () => {
                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-3 duration-300">
                   <div className="flex justify-between items-center">
                     <h3 className="font-title text-gold uppercase tracking-wider text-sm">Escolha a Data & Hora</h3>
-                    <button onClick={() => setBookingStep(3)} className="text-[10px] text-dark-500 hover:text-gold uppercase tracking-widest font-semibold">
+                    <button onClick={() => setBookingStep(3)} className="text-[10px] text-dark-400 hover:text-gold uppercase tracking-widest font-semibold transition-colors">
                       Voltar
                     </button>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-xs font-semibold text-dark-500 uppercase tracking-widest mb-2">Selecione o Dia</label>
+                      <label className="block text-xs font-semibold text-dark-300 uppercase tracking-widest mb-2">Selecione o Dia</label>
                       <input
                         type="date"
                         min={new Date().toISOString().split('T')[0]}
@@ -1015,12 +1032,12 @@ const LandingPage = () => {
                       )}
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-dark-500 uppercase tracking-widest mb-2">Horários Disponíveis</label>
+                      <label className="block text-xs font-semibold text-dark-300 uppercase tracking-widest mb-2">Horários Disponíveis</label>
                       {bookingForm.date ? (
                         loadingHours ? (
                           <div className="h-24 flex flex-col items-center justify-center space-y-2 bg-dark-900/20 border border-dark-800/40 rounded-lg">
                             <div className="w-5 h-5 border-2 border-gold border-t-transparent rounded-full animate-spin"></div>
-                            <span className="text-[10px] text-dark-500 uppercase tracking-widest">Consultando agenda...</span>
+                            <span className="text-[10px] text-dark-300 uppercase tracking-widest">Consultando agenda...</span>
                           </div>
                         ) : (
                           <div className="grid grid-cols-3 gap-2 animate-in fade-in duration-200">
@@ -1037,7 +1054,7 @@ const LandingPage = () => {
                                       ? 'bg-red-950/15 border-red-900/20 text-red-500/40 cursor-not-allowed line-through'
                                       : bookingForm.time === h 
                                         ? 'bg-gold text-dark-950 border-gold shadow-gold-glow font-bold cursor-pointer' 
-                                        : 'bg-dark-900 border-dark-800 text-dark-500 hover:border-gold/30 hover:text-white cursor-pointer'
+                                        : 'bg-dark-900 border-dark-800 text-dark-300 hover:border-gold/30 hover:text-white cursor-pointer transition-colors'
                                   }`}
                                   title={isOccupied ? 'Horário já ocupado' : 'Horário disponível'}
                                 >
@@ -1048,7 +1065,7 @@ const LandingPage = () => {
                           </div>
                         )
                       ) : (
-                        <div className="h-24 flex items-center justify-center text-xs text-dark-500 bg-dark-900/40 rounded-lg border border-dashed border-dark-800">
+                        <div className="h-24 flex items-center justify-center text-xs text-dark-400 bg-dark-900/40 rounded-lg border border-dashed border-dark-800">
                           Selecione um dia para liberar horários
                         </div>
                       )}
@@ -1062,7 +1079,7 @@ const LandingPage = () => {
                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-3 duration-300">
                   <div className="flex justify-between items-center">
                     <h3 className="font-title text-gold uppercase tracking-wider text-sm">Informações de Contato</h3>
-                    <button onClick={() => setBookingStep(4)} className="text-[10px] text-dark-500 hover:text-gold uppercase tracking-widest font-semibold">
+                    <button onClick={() => setBookingStep(4)} className="text-[10px] text-dark-400 hover:text-gold uppercase tracking-widest font-semibold transition-colors">
                       Voltar
                     </button>
                   </div>
@@ -1071,60 +1088,60 @@ const LandingPage = () => {
                   <div className="p-4 bg-dark-900 rounded-xl border border-dark-800 grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs">
                     <div className="col-span-2 sm:col-span-3 pb-2 border-b border-dark-800 flex justify-between items-center">
                       <div>
-                        <span className="text-dark-500 block uppercase tracking-widest text-[9px] mb-0.5">Unidade</span>
+                        <span className="text-dark-300 block uppercase tracking-widest text-[9px] mb-0.5 font-semibold">Unidade</span>
                         <span className="font-bold text-white text-sm">{bookingForm.branchName}</span>
                       </div>
                       <div className="text-right">
-                        <span className="text-dark-500 block uppercase tracking-widest text-[9px] mb-0.5">Valor Total</span>
+                        <span className="text-dark-300 block uppercase tracking-widest text-[9px] mb-0.5 font-semibold">Valor Total</span>
                         <span className="font-bold text-gold text-sm">R$ {bookingForm.price}</span>
                       </div>
                     </div>
                     <div>
-                      <span className="text-dark-500 block uppercase tracking-widest text-[9px] mb-0.5">Profissional</span>
+                      <span className="text-dark-300 block uppercase tracking-widest text-[9px] mb-0.5 font-semibold">Profissional</span>
                       <span className="font-bold text-white">{bookingForm.employeeName}</span>
                     </div>
                     <div>
-                      <span className="text-dark-500 block uppercase tracking-widest text-[9px] mb-0.5">Serviço</span>
+                      <span className="text-dark-300 block uppercase tracking-widest text-[9px] mb-0.5 font-semibold">Serviço</span>
                       <span className="font-bold text-white">{bookingForm.serviceName}</span>
                     </div>
                     <div>
-                      <span className="text-dark-500 block uppercase tracking-widest text-[9px] mb-0.5">Data e Hora</span>
+                      <span className="text-dark-300 block uppercase tracking-widest text-[9px] mb-0.5 font-semibold">Data e Hora</span>
                       <span className="font-bold text-gold">{bookingForm.date.split('-').reverse().join('/')} às {bookingForm.time}</span>
                     </div>
                   </div>
 
                   <form onSubmit={handleBookingSubmit} className="space-y-4">
                     <div>
-                      <label className="block text-[10px] font-bold text-dark-500 uppercase tracking-widest mb-1.5">Nome Completo</label>
+                      <label className="block text-[10px] font-bold text-dark-300 uppercase tracking-widest mb-1.5">Nome Completo</label>
                       <input
                         type="text"
                         placeholder="Ex: João da Silva"
                         value={bookingForm.clientName}
                         onChange={(e) => setBookingForm({ ...bookingForm, clientName: e.target.value })}
-                        className="w-full px-4 py-2.5 bg-dark-900 border border-dark-700 rounded-lg text-white focus:outline-none focus:border-gold text-sm"
+                        className="w-full px-4 py-2.5 bg-dark-900 border border-dark-700 rounded-lg text-white placeholder-dark-400 focus:outline-none focus:border-gold text-sm transition-colors"
                         required
                       />
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-[10px] font-bold text-dark-500 uppercase tracking-widest mb-1.5">WhatsApp</label>
+                        <label className="block text-[10px] font-bold text-dark-300 uppercase tracking-widest mb-1.5">WhatsApp</label>
                         <input
                           type="tel"
                           placeholder="Ex: 11999998888"
                           value={bookingForm.clientPhone}
                           onChange={(e) => setBookingForm({ ...bookingForm, clientPhone: e.target.value })}
-                          className="w-full px-4 py-2.5 bg-dark-900 border border-dark-700 rounded-lg text-white focus:outline-none focus:border-gold text-sm"
+                          className="w-full px-4 py-2.5 bg-dark-900 border border-dark-700 rounded-lg text-white placeholder-dark-400 focus:outline-none focus:border-gold text-sm transition-colors"
                           required
                         />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-bold text-dark-500 uppercase tracking-widest mb-1.5">E-mail</label>
+                        <label className="block text-[10px] font-bold text-dark-300 uppercase tracking-widest mb-1.5">E-mail</label>
                         <input
                           type="email"
                           placeholder="seu@email.com"
                           value={bookingForm.clientEmail}
                           onChange={(e) => setBookingForm({ ...bookingForm, clientEmail: e.target.value })}
-                          className="w-full px-4 py-2.5 bg-dark-900 border border-dark-700 rounded-lg text-white focus:outline-none focus:border-gold text-sm"
+                          className="w-full px-4 py-2.5 bg-dark-900 border border-dark-700 rounded-lg text-white placeholder-dark-400 focus:outline-none focus:border-gold text-sm transition-colors"
                           required
                         />
                       </div>
@@ -1148,7 +1165,7 @@ const LandingPage = () => {
                     <Check className="w-8 h-8" />
                   </div>
                   <h3 className="font-title text-white uppercase tracking-wider text-xl">Agendamento Pré-Confirmado!</h3>
-                  <p className="text-xs text-dark-500 max-w-md mx-auto leading-relaxed">
+                  <p className="text-xs text-dark-300 max-w-md mx-auto leading-relaxed">
                     Seu agendamento foi salvo. Estamos redirecionando você para o nosso WhatsApp para enviar a mensagem de confirmação final ao atendente em instantes...
                   </p>
                   <div className="pt-6">
@@ -1204,7 +1221,7 @@ const LandingPage = () => {
                     <cite className="not-italic font-title font-semibold text-gold uppercase tracking-wider text-xs md:text-sm">
                       {testimonials[testimonialIndex].name}
                     </cite>
-                    <p className="text-[10px] text-dark-500 uppercase tracking-widest mt-1">Cliente VIP</p>
+                    <p className="text-[10px] text-dark-400 uppercase tracking-widest mt-1">Cliente VIP</p>
                   </div>
                 </motion.div>
               </AnimatePresence>
@@ -1267,7 +1284,7 @@ const LandingPage = () => {
                   </div>
                   <div>
                     <h4 className="font-title font-bold text-xs text-white uppercase tracking-widest mb-1">Endereço</h4>
-                    <p className="text-sm text-dark-500 font-light">{activeBranch.address}</p>
+                    <p className="text-sm text-dark-300 font-light">{activeBranch.address}</p>
                   </div>
                 </div>
 
@@ -1277,7 +1294,7 @@ const LandingPage = () => {
                   </div>
                   <div>
                     <h4 className="font-title font-bold text-xs text-white uppercase tracking-widest mb-1">Horário de Funcionamento</h4>
-                    <p className="text-sm text-dark-500 font-light leading-relaxed">{activeBranch.openingHours}</p>
+                    <p className="text-sm text-dark-300 font-light leading-relaxed">{activeBranch.openingHours}</p>
                   </div>
                 </div>
 
@@ -1287,7 +1304,7 @@ const LandingPage = () => {
                   </div>
                   <div>
                     <h4 className="font-title font-bold text-xs text-white uppercase tracking-widest mb-1">Telefone / WhatsApp</h4>
-                    <p className="text-sm text-dark-500 font-light">{activeBranch.phone}</p>
+                    <p className="text-sm text-dark-300 font-light">{activeBranch.phone}</p>
                   </div>
                 </div>
               </div>
@@ -1338,7 +1355,7 @@ const LandingPage = () => {
                   <Check className="w-8 h-8" />
                 </div>
                 <h3 className="font-title text-white uppercase tracking-wider text-xl">Mensagem Enviada!</h3>
-                <p className="text-xs text-dark-500 max-w-md mx-auto">
+                <p className="text-xs text-dark-300 max-w-md mx-auto">
                   Agradecemos seu contato. Nossa equipe retornará seu e-mail o mais rápido possível.
                 </p>
               </div>
@@ -1346,37 +1363,37 @@ const LandingPage = () => {
               <form onSubmit={handleContactSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-xs font-semibold text-dark-500 uppercase tracking-widest mb-2">Seu Nome</label>
+                    <label className="block text-xs font-semibold text-dark-300 uppercase tracking-widest mb-2">Seu Nome</label>
                     <input
                       type="text"
                       placeholder="Ex: João Silva"
                       value={contactForm.name}
                       onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
-                      className="w-full px-4 py-3.5 bg-dark-950 border border-dark-700 rounded-lg text-white focus:outline-none focus:border-gold text-sm"
+                      className="w-full px-4 py-3.5 bg-dark-950 border border-dark-700 rounded-lg text-white placeholder-dark-400 focus:outline-none focus:border-gold text-sm transition-colors"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-dark-500 uppercase tracking-widest mb-2">Seu E-mail</label>
+                    <label className="block text-xs font-semibold text-dark-300 uppercase tracking-widest mb-2">Seu E-mail</label>
                     <input
                       type="email"
                       placeholder="Ex: joao@email.com"
                       value={contactForm.email}
                       onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
-                      className="w-full px-4 py-3.5 bg-dark-950 border border-dark-700 rounded-lg text-white focus:outline-none focus:border-gold text-sm"
+                      className="w-full px-4 py-3.5 bg-dark-950 border border-dark-700 rounded-lg text-white placeholder-dark-400 focus:outline-none focus:border-gold text-sm transition-colors"
                       required
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-dark-500 uppercase tracking-widest mb-2">Mensagem</label>
+                  <label className="block text-xs font-semibold text-dark-300 uppercase tracking-widest mb-2">Mensagem</label>
                   <textarea
                     rows="4"
                     placeholder="Sua dúvida ou sugestão..."
                     value={contactForm.message}
                     onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
-                    className="w-full px-4 py-3.5 bg-dark-950 border border-dark-700 rounded-lg text-white focus:outline-none focus:border-gold text-sm font-sans"
+                    className="w-full px-4 py-3.5 bg-dark-950 border border-dark-700 rounded-lg text-white placeholder-dark-400 focus:outline-none focus:border-gold text-sm font-sans transition-colors"
                     required
                   ></textarea>
                 </div>
@@ -1403,7 +1420,7 @@ const LandingPage = () => {
               <Scissors className="w-6 h-6 text-gold transform -rotate-45" />
               <span className="font-title font-bold text-lg tracking-widest text-gold">FLORES</span>
             </div>
-            <p className="text-xs text-dark-500 leading-relaxed font-light max-w-sm">
+            <p className="text-xs text-dark-300 leading-relaxed font-light max-w-sm">
               Espaço premium focado na excelência dos cortes clássicos, design modernos de barbas e cuidado pessoal masculino de alta qualidade.
             </p>
             <div className="flex items-center gap-4 pt-2">
@@ -1418,9 +1435,9 @@ const LandingPage = () => {
 
           <div className="space-y-4">
             <h4 className="font-title font-bold text-xs text-white uppercase tracking-widest">Links Rápidos</h4>
-            <nav className="flex flex-col gap-2.5 text-xs text-dark-500">
+            <nav className="flex flex-col gap-2.5 text-xs text-dark-400">
               {['sobre', 'servicos', 'galeria', 'equipe'].map(id => (
-                <button key={id} onClick={() => scrollToId(id)} className="text-left hover:text-gold transition-colors capitalize">
+                <button key={id} onClick={() => scrollToId(id)} className="text-left hover:text-gold transition-colors capitalize cursor-pointer">
                   {id}
                 </button>
               ))}
@@ -1429,7 +1446,7 @@ const LandingPage = () => {
 
           <div className="space-y-4">
             <h4 className="font-title font-bold text-xs text-white uppercase tracking-widest">Contato e Endereço</h4>
-            <p className="text-xs text-dark-500 leading-relaxed font-light">
+            <p className="text-xs text-dark-300 leading-relaxed font-light">
               {settings.address} <br />
               {settings.phone} <br />
               {settings.email}
@@ -1438,11 +1455,11 @@ const LandingPage = () => {
 
         </div>
 
-        <div className="max-w-7xl mx-auto px-6 pt-12 mt-12 border-t border-dark-900 flex flex-col sm:flex-row items-center justify-between text-xs text-dark-500 gap-4">
+        <div className="max-w-7xl mx-auto px-6 pt-12 mt-12 border-t border-dark-900 flex flex-col sm:flex-row items-center justify-between text-xs text-dark-400 gap-4">
           <p>© {new Date().getFullYear()} Barbearia Flores. Todos os direitos reservados.</p>
           <div className="flex gap-4">
-            <button className="hover:text-gold transition-colors">Políticas de Privacidade</button>
-            <button className="hover:text-gold transition-colors">Termos de Uso</button>
+            <button className="hover:text-gold transition-colors cursor-pointer">Políticas de Privacidade</button>
+            <button className="hover:text-gold transition-colors cursor-pointer">Termos de Uso</button>
           </div>
         </div>
       </footer>
