@@ -14,8 +14,11 @@
   --color-dark-900: #0D0D0E;
   --color-dark-800: #141416;
   --color-dark-700: #1C1C1F;
-  --color-dark-600: #28282D;
-  --color-dark-500: #3D3D45;
+  --color-dark-600: #33333A;
+  --color-dark-500: #787885;
+  --color-dark-400: #9E9EAF;
+  --color-dark-300: #C5C5D3;
+  --color-dark-200: #E4E4EE;
 
   --font-title: 'Cinzel', serif;
   --font-sans: 'Montserrat', sans-serif;
