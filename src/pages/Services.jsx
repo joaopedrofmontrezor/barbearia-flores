@@ -50,7 +50,7 @@ const Services = () => {
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
           <button 
             onClick={() => navigate('/')} 
-            className="flex items-center gap-2 text-xs font-bold tracking-widest uppercase text-dark-500 hover:text-gold transition-colors cursor-pointer"
+            className="flex items-center gap-2 text-xs font-bold tracking-widest uppercase text-dark-400 hover:text-gold transition-colors cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Voltar</span>
@@ -94,7 +94,7 @@ const Services = () => {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-xs sm:text-sm text-dark-500 max-w-xl mx-auto tracking-wide leading-relaxed font-light"
+            className="text-xs sm:text-sm text-dark-300 max-w-xl mx-auto tracking-wide leading-relaxed font-light"
           >
             Oferecemos uma experiência completa de estética masculina. Escolha entre cortes modernos, barboterapia relaxante e tratamentos premium para sua pele e cabelo.
           </motion.p>
@@ -111,7 +111,7 @@ const Services = () => {
               <div className="absolute inset-0 border-4 border-dark-800 rounded-full"></div>
               <div className="absolute inset-0 border-4 border-gold rounded-full animate-spin border-t-transparent"></div>
             </div>
-            <p className="text-dark-500 text-xs uppercase tracking-widest animate-pulse">Carregando serviços...</p>
+            <p className="text-dark-400 text-xs uppercase tracking-widest animate-pulse">Carregando serviços...</p>
           </div>
         )}
 
@@ -123,7 +123,7 @@ const Services = () => {
             </div>
             <div className="space-y-2">
               <h3 className="font-title font-bold text-lg text-white uppercase tracking-wider">Falha na Conexão</h3>
-              <p className="text-xs text-dark-500 font-light leading-relaxed">{error}</p>
+              <p className="text-xs text-dark-300 font-light leading-relaxed">{error}</p>
             </div>
             <button
               onClick={fetchServicesData}
@@ -140,8 +140,8 @@ const Services = () => {
           <>
             {services.length === 0 ? (
               <div className="h-[40vh] flex flex-col items-center justify-center text-center space-y-2">
-                <p className="text-dark-500 text-sm font-light">Nenhum serviço disponível no momento.</p>
-                <p className="text-dark-500 text-xs font-light">Por favor, execute o seed do banco de dados.</p>
+                <p className="text-dark-300 text-sm font-light">Nenhum serviço disponível no momento.</p>
+                <p className="text-dark-400 text-xs font-light">Por favor, execute o seed do banco de dados.</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
