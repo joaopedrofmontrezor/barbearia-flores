@@ -30,20 +30,143 @@ const INITIAL_SERVICES = [
   { id: 's_8', name: "Luzes", price: 185, description: "Clareamento parcial dos fios com técnicas modernas para um efeito iluminado personalizado.", duration: 90, active: true, createdAt: new Date().toISOString() },
   { id: 's_9', name: "Pezinho (Acabamento)", price: 20, description: "Acabamento e contorno do cabelo (nuca, costeletas e testa) feito na navalha e finalizado com loção.", duration: 15, active: true, createdAt: new Date().toISOString() },
   { id: 's_10', name: "Pigmentação", price: 25, description: "Correção de falhas e realce do contorno da barba ou cabelo com pigmento de acabamento natural.", duration: 20, active: true, createdAt: new Date().toISOString() },
-  { id: 's_11', name: "Selagem", price: 75, description: "Tratamento térmico para redução de volume, frizz e alinhamento dos fios com aspect natural.", duration: 60, active: true, createdAt: new Date().toISOString() },
+  { id: 's_11', name: "Selagem", price: 75, description: "Tratamento térmico para redução de volume, frizz e alinhamento dos fios com aspecto natural.", duration: 60, active: true, createdAt: new Date().toISOString() },
   { id: 's_12', name: "Sobrancelha", price: 15, description: "Design de sobrancelha masculino com navalha ou pinça, valorizando o olhar e a harmonia facial.", duration: 15, active: true, createdAt: new Date().toISOString() },
   { id: 's_13', name: "Upgrade do Platinado", price: 55, description: "Manutenção e matização do tom platinado para cabelos descoloridos, neutralizando amarelos indesejados.", duration: 45, active: true, createdAt: new Date().toISOString() }
 ];
 
 const INITIAL_EMPLOYEES = [
-  { id: 'e1', name: 'Carlos "Navalha" Santos', role: 'Mestre Barbeiro', photo: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=400', rating: 4.9, bio: 'Mais de 10 anos de experiência em cortes clássicos e barboterapia tradicional.' },
-  { id: 'e2', name: 'Diogo Silva', role: 'Barbeiro Designer', photo: 'https://images.unsplash.com/photo-1607990283143-e81e7a2c93ab?auto=format&fit=crop&q=80&w=400', rating: 4.8, bio: 'Especialista em freestyle, cortes modernos, pigmentações e degradê perfeito.' },
-  { id: 'e3', name: 'Marcus Vinícius', role: 'Visagista & Stylist', photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=400', rating: 5.0, bio: 'Visagismo masculino avançado, cuidando do cabelo e pele de acordo com sua imagem.' }
+  {
+    id: 'e_1',
+    name: 'Gabriel Flores',
+    role: 'Mestre Barbeiro & Proprietário',
+    photo: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=400',
+    branchId: 'br1',
+    branchName: 'Barbearia Flores - Benassi',
+    specialties: ['Degradê Avançado', 'Barboterapia', 'Visagismo'],
+    allowedServices: ['s_1', 's_2', 's_3', 's_6', 's_7', 's_9', 's_10', 's_12'],
+    workDays: [1, 2, 3, 4, 5, 6],
+    availableHours: ['09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'],
+    active: true,
+    phone: '5516994206778',
+    instagram: '@gabrielflores.barber',
+    bio: 'Especialista em visagismo masculino moderno e fundador da Barbearia Flores.',
+    avgServiceTime: 30,
+    rating: 4.9,
+    ratingCount: 142,
+    bookingsCount: 650,
+    permissions: ['admin']
+  },
+  {
+    id: 'e_2',
+    name: 'João Vitor Moraes',
+    role: 'Barbeiro Designer',
+    photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=400',
+    branchId: 'br1',
+    branchName: 'Barbearia Flores - Benassi',
+    specialties: ['Cortes Clássicos', 'Selagem', 'Pezinho'],
+    allowedServices: ['s_3', 's_4', 's_5', 's_6', 's_9', 's_11', 's_12', 's_13'],
+    workDays: [1, 2, 3, 4, 5, 6],
+    availableHours: ['09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'],
+    active: true,
+    phone: '5516994206778',
+    instagram: '@joaovitor.barber',
+    bio: 'Especialista em cortes clássicos na tesoura, finalizações e selagens masculinas.',
+    avgServiceTime: 40,
+    rating: 4.8,
+    ratingCount: 96,
+    bookingsCount: 320,
+    permissions: ['standard']
+  },
+  {
+    id: 'e_3',
+    name: 'Gustavo Melo',
+    role: 'Mestre Barbeiro',
+    photo: 'https://images.unsplash.com/photo-1607990283143-e81e7a2c93ab?auto=format&fit=crop&q=80&w=400',
+    branchId: 'br2',
+    branchName: 'Barbearia Flores - Bairro Alto',
+    specialties: ['Barboterapia', 'Luzes', 'Pigmentação'],
+    allowedServices: ['s_1', 's_2', 's_8', 's_9', 's_10'],
+    workDays: [1, 2, 3, 4, 5, 6],
+    availableHours: ['09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'],
+    active: true,
+    phone: '5516994206778',
+    instagram: '@gustavomelo.barber',
+    bio: 'Especialista em cuidados faciais, rituais de barba tradicional e técnicas modernas de luzes e pigmentação.',
+    avgServiceTime: 30,
+    rating: 4.9,
+    ratingCount: 118,
+    bookingsCount: 410,
+    permissions: ['standard']
+  },
+  {
+    id: 'e_4',
+    name: 'Diego Bernardo',
+    role: 'Barbeiro Artístico',
+    photo: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=400',
+    branchId: 'br2',
+    branchName: 'Barbearia Flores - Bairro Alto',
+    specialties: ['Freestyle', 'Degradê Perfeito', 'Pigmentação'],
+    allowedServices: ['s_3', 's_8', 's_9', 's_10', 's_11', 's_13'],
+    workDays: [1, 2, 3, 4, 5, 6],
+    availableHours: ['09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'],
+    active: true,
+    phone: '5516994206778',
+    instagram: '@diegobernardo.barber',
+    bio: 'Especialista em desenhos artísticos (freestyle), degradês perfeitos e químicas no geral.',
+    avgServiceTime: 35,
+    rating: 5.0,
+    ratingCount: 88,
+    bookingsCount: 290,
+    permissions: ['standard']
+  },
+  {
+    id: 'e_5',
+    name: 'Wesley Gonçalves',
+    role: 'Visagista & Esteticista',
+    photo: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=400',
+    branchId: 'br2',
+    branchName: 'Barbearia Flores - Bairro Alto',
+    specialties: ['Limpeza de Pele', 'Sobrancelha', 'Depilação'],
+    allowedServices: ['s_4', 's_5', 's_7', 's_12'],
+    workDays: [1, 2, 3, 4, 5, 6],
+    availableHours: ['09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'],
+    active: true,
+    phone: '5516994206778',
+    instagram: '@wesleygoncalves.estetica',
+    bio: 'Especialista em visagismo facial, design de sobrancelha masculina e tratamentos de pele com peeling e hidratação.',
+    avgServiceTime: 25,
+    rating: 4.8,
+    ratingCount: 74,
+    bookingsCount: 180,
+    permissions: ['standard']
+  },
+  {
+    id: 'e_6',
+    name: 'Luizy Bonalune',
+    role: 'Barbeira & Hair Stylist',
+    photo: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=400',
+    branchId: 'br2',
+    branchName: 'Barbearia Flores - Bairro Alto',
+    specialties: ['Corte Moderno', 'Hidratação Profunda', 'Platinado'],
+    allowedServices: ['s_3', 's_6', 's_8', 's_11', 's_13'],
+    workDays: [1, 2, 3, 4, 5, 6],
+    availableHours: ['09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'],
+    active: true,
+    phone: '5516994206778',
+    instagram: '@luizybonalune.barber',
+    bio: 'Especialista em cortes modernos masculinos estilizados, hidratações profundas e descoloração avançada (platinados).',
+    avgServiceTime: 45,
+    rating: 4.9,
+    ratingCount: 110,
+    bookingsCount: 380,
+    permissions: ['standard']
+  }
 ];
 
 const INITIAL_TESTIMONIALS = [
   { id: 't1', name: 'Thiago Ramos', text: 'Melhor barbearia que já frequentei na vida! A barboterapia com toalha quente e massagem é de outro mundo.', rating: 5, date: '2026-05-18' },
-  { id: 't2', name: 'Lucas Almeida', text: 'Ambiente sensacional com decoração impecável. O Diogo cortou meu cabelo perfeitamente enquanto tomava uma IPA gelada.', rating: 5, date: '2026-05-20' },
+  { id: 't2', name: 'Lucas Almeida', text: 'Ambiente sensacional com decoração impecável. O Diego cortou meu cabelo perfeitamente enquanto tomava uma IPA gelada.', rating: 5, date: '2026-05-20' },
   { id: 't3', name: 'Gabriel Costa', text: 'Excelente experiência. Agendei pelo site de forma super rápida e fui atendido exatamente no horário. Nota 10!', rating: 5, date: '2026-05-21' }
 ];
 
@@ -58,12 +181,10 @@ const INITIAL_GALLERY = [
 
 const INITIAL_SETTINGS = {
   phone: '5516994206778',
-
   email: 'contato@barbeariaflores.com',
   address: 'Avenida Baldan, 1910 - Residencial Benassi, Matão - SP, 15993-000',
   openingHours: 'Seg a Sex: 09h às 21h | Sáb: 09h às 19h',
   whatsappMessageTemplate: 'Olá! Gostaria de confirmar meu agendamento na Barbearia Flores para o dia {data} às {hora} com o profissional {barbeiro} (Serviço: {servico}) na unidade {unidade}.',
-
   branches: [
     {
       id: 'br1',
@@ -85,8 +206,8 @@ const INITIAL_SETTINGS = {
 };
 
 const INITIAL_BOOKINGS = [
-  { id: 'b1', clientName: 'Felipe Melo', clientEmail: 'felipe@email.com', clientPhone: '11988887777', employeeId: 'e1', employeeName: 'Carlos "Navalha" Santos', serviceId: 's1', serviceName: 'Corte Masculino', price: 60, date: '2026-05-22', time: '14:30', status: 'confirmado', createdAt: '2026-05-21T18:30:00.000Z' },
-  { id: 'b2', clientName: 'Rodrigo Faro', clientEmail: 'rodrigo@email.com', clientPhone: '11977776666', employeeId: 'e2', employeeName: 'Diogo Silva', serviceId: 's2', serviceName: 'Barba Premium', price: 50, date: '2026-05-22', time: '16:00', status: 'pendente', createdAt: '2026-05-22T08:15:00.000Z' }
+  { id: 'b1', clientName: 'Felipe Melo', clientEmail: 'felipe@email.com', clientPhone: '11988887777', employeeId: 'e_1', employeeName: 'Gabriel Flores', serviceId: 's_3', serviceName: 'Corte de Cabelo', price: 55, date: '2026-05-22', time: '14:30', status: 'confirmado', createdAt: '2026-05-21T18:30:00.000Z' },
+  { id: 'b2', clientName: 'Rodrigo Faro', clientEmail: 'rodrigo@email.com', clientPhone: '11977776666', employeeId: 'e_3', employeeName: 'Gustavo Melo', serviceId: 's_2', serviceName: 'Barboterapia', price: 50, date: '2026-05-22', time: '16:00', status: 'pendente', createdAt: '2026-05-22T08:15:00.000Z' }
 ];
 
 // --- SETUP LOCAL STORAGE SE MOCK ---
@@ -320,6 +441,18 @@ export const saveBooking = async (booking) => {
       const idx = list.findIndex(b => b.id === booking.id);
       if (idx !== -1) list[idx] = booking;
     } else {
+      // Validação crítica de conflito de horários (Overbooking)
+      const isOccupied = list.some(b => 
+        b.date === booking.date &&
+        b.time === booking.time &&
+        b.employeeId === booking.employeeId &&
+        b.branchId === booking.branchId &&
+        b.status !== 'cancelado'
+      );
+      if (isOccupied) {
+        throw new Error("Este horário já foi reservado por outro cliente. Por favor, selecione outro horário disponível.");
+      }
+
       booking.id = 'b_' + Date.now();
       booking.createdAt = timestamp;
       booking.status = booking.status || 'pendente';
@@ -334,6 +467,19 @@ export const saveBooking = async (booking) => {
     await setDoc(docRef, data, { merge: true });
     return booking;
   } else {
+    // Validação crítica de conflito de horários (Overbooking) em produção
+    const allBookings = await getBookings();
+    const isOccupied = allBookings.some(b => 
+      b.date === booking.date &&
+      b.time === booking.time &&
+      b.employeeId === booking.employeeId &&
+      b.branchId === booking.branchId &&
+      b.status !== 'cancelado'
+    );
+    if (isOccupied) {
+      throw new Error("Este horário já foi reservado por outro cliente. Por favor, selecione outro horário disponível.");
+    }
+
     const newBooking = {
       ...booking,
       createdAt: timestamp,
