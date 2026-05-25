@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { 
   getServices, getEmployees, getTestimonials, 
-  getGallery, getSettings, saveBooking 
+  getGallery, getSettings, saveBooking, getOccupiedHours
 } from '../firebase/dbService';
 import { logoutAdmin } from '../firebase/authService';
 import ServiceCard from '../components/ServiceCard';
@@ -86,6 +86,11 @@ const LandingPage = () => {
   // Testimonials Auto Scroll State
   const [testimonialIndex, setTestimonialIndex] = useState(0);
 
+  // Overbooking prevention state
+  const [occupiedHours, setOccupiedHours] = useState([]);
+  const [loadingHours, setLoadingHours] = useState(false);
+  const [dateError, setDateError] = useState('');
+
   // Contact Form State
   const [contactForm, setContactForm] = useState({ name: '', email: '', message: '' });
   const [contactSuccess, setContactSuccess] = useState(false);
@@ -151,6 +156,28 @@ const LandingPage = () => {
     }
   }, [location]);
 
+  // Busca horários ocupados para evitar overbooking
+  useEffect(() => {
+    const fetchOccupied = async () => {
+      if (!bookingForm.date || !bookingForm.employeeId || !bookingForm.branchId) {
+        setOccupiedHours([]);
+        return;
+      }
+      setLoadingHours(true);
+      try {
+        const hours = await getOccupiedHours(bookingForm.date, bookingForm.employeeId, bookingForm.branchId);
+        setOccupiedHours(hours);
+      } catch (err) {
+        console.error("Erro ao carregar horários ocupados:", err);
+        setOccupiedHours([]);
+      } finally {
+        setLoadingHours(false);
+      }
+    };
+    
+    fetchOccupied();
+  }, [bookingForm.date, bookingForm.employeeId, bookingForm.branchId]);
+
   // Testimonials slider interval
   useEffect(() => {
     if (testimonials.length === 0) return;
@@ -165,7 +192,13 @@ const LandingPage = () => {
   };
 
   const scrollToId = (id) => {
-    const el = document.getElementById(id);
+    // Normaliza o ID: remove acentos e deixa tudo em minúsculas
+    const normalizedId = id
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+
+    const el = document.getElementById(normalizedId);
     if (el) {
       el.scrollIntoView({ behavior: 'smooth' });
     }
@@ -218,6 +251,52 @@ const LandingPage = () => {
   const selectService = (srv) => {
     setBookingForm({ ...bookingForm, serviceId: srv.id, serviceName: srv.name, price: srv.price });
     setBookingStep(4);
+  };
+
+  const getFilteredHoursForDate = (dateString) => {
+    if (!dateString) return [];
+    
+    const [year, month, day] = dateString.split('-').map(Number);
+    const dateObj = new Date(year, month - 1, day);
+    const dayOfWeek = dateObj.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+    
+    if (dayOfWeek === 0) {
+      return []; // Domingo fechado
+    }
+    
+    if (dayOfWeek === 6) {
+      // Sábado fechado mais cedo (19h, portanto último horário elegível é antes das 19h, ex: até 18h)
+      return availableHours.filter(h => {
+        const hourNum = parseInt(h.split(':')[0], 10);
+        return hourNum < 19;
+      });
+    }
+    
+    // Segunda a Sexta: até 21h (portanto, até as 20:00 ou similar)
+    return availableHours.filter(h => {
+      const hourNum = parseInt(h.split(':')[0], 10);
+      return hourNum < 21;
+    });
+  };
+
+  const handleDateChange = (dateVal) => {
+    setDateError('');
+    if (!dateVal) {
+      setBookingForm(prev => ({ ...prev, date: '', time: '' }));
+      return;
+    }
+    
+    const [year, month, day] = dateVal.split('-').map(Number);
+    const dateObj = new Date(year, month - 1, day);
+    const dayOfWeek = dateObj.getDay();
+    
+    if (dayOfWeek === 0) {
+      setDateError('A barbearia está fechada aos domingos. Por favor, selecione outro dia de segunda a sábado.');
+      setBookingForm(prev => ({ ...prev, date: '', time: '' }));
+      return;
+    }
+    
+    setBookingForm(prev => ({ ...prev, date: dateVal, time: '' }));
   };
 
   const selectDateTime = (date, time) => {
@@ -922,30 +1001,52 @@ const LandingPage = () => {
                         type="date"
                         min={new Date().toISOString().split('T')[0]}
                         value={bookingForm.date}
-                        onChange={(e) => setBookingForm({ ...bookingForm, date: e.target.value })}
-                        className="w-full px-4 py-3 bg-dark-900 border border-dark-700 rounded-lg text-white focus:outline-none focus:border-gold text-sm"
+                        onChange={(e) => handleDateChange(e.target.value)}
+                        className={`w-full px-4 py-3 bg-dark-900 border rounded-lg text-white focus:outline-none focus:border-gold text-sm ${
+                          dateError ? 'border-red-900 focus:border-red-500' : 'border-dark-700'
+                        }`}
                         required
                       />
+                      {dateError && (
+                        <p className="text-red-400 text-[10px] mt-2 font-semibold flex items-center gap-1 animate-in fade-in slide-in-from-top-1 duration-200">
+                          <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0"></span>
+                          <span>{dateError}</span>
+                        </p>
+                      )}
                     </div>
                     <div>
                       <label className="block text-xs font-semibold text-dark-500 uppercase tracking-widest mb-2">Horários Disponíveis</label>
                       {bookingForm.date ? (
-                        <div className="grid grid-cols-3 gap-2">
-                          {availableHours.map(h => (
-                            <button
-                              key={h}
-                              type="button"
-                              onClick={() => selectDateTime(bookingForm.date, h)}
-                              className={`py-2 px-1 text-xs rounded border text-center transition-all ${
-                                bookingForm.time === h 
-                                  ? 'bg-gold text-dark-950 border-gold shadow-gold-glow font-bold' 
-                                  : 'bg-dark-900 border-dark-800 text-dark-500 hover:border-gold/30 hover:text-white'
-                              }`}
-                            >
-                              {h}
-                            </button>
-                          ))}
-                        </div>
+                        loadingHours ? (
+                          <div className="h-24 flex flex-col items-center justify-center space-y-2 bg-dark-900/20 border border-dark-800/40 rounded-lg">
+                            <div className="w-5 h-5 border-2 border-gold border-t-transparent rounded-full animate-spin"></div>
+                            <span className="text-[10px] text-dark-500 uppercase tracking-widest">Consultando agenda...</span>
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-3 gap-2 animate-in fade-in duration-200">
+                            {getFilteredHoursForDate(bookingForm.date).map(h => {
+                              const isOccupied = occupiedHours.includes(h);
+                              return (
+                                <button
+                                  key={h}
+                                  type="button"
+                                  disabled={isOccupied}
+                                  onClick={() => selectDateTime(bookingForm.date, h)}
+                                  className={`py-2 px-1 text-xs rounded border text-center transition-all ${
+                                    isOccupied
+                                      ? 'bg-red-950/15 border-red-900/20 text-red-500/40 cursor-not-allowed line-through'
+                                      : bookingForm.time === h 
+                                        ? 'bg-gold text-dark-950 border-gold shadow-gold-glow font-bold cursor-pointer' 
+                                        : 'bg-dark-900 border-dark-800 text-dark-500 hover:border-gold/30 hover:text-white cursor-pointer'
+                                  }`}
+                                  title={isOccupied ? 'Horário já ocupado' : 'Horário disponível'}
+                                >
+                                  {h}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )
                       ) : (
                         <div className="h-24 flex items-center justify-center text-xs text-dark-500 bg-dark-900/40 rounded-lg border border-dashed border-dark-800">
                           Selecione um dia para liberar horários

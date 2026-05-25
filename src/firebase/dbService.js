@@ -389,3 +389,57 @@ export const subscribeBookings = (onUpdate) => {
     console.error("Erro na escuta de agendamentos em tempo real:", error);
   });
 };
+
+// 8. Busca horários ocupados para evitar overbooking
+export const getOccupiedHours = async (date, employeeId, branchId) => {
+  if (isMock) {
+    const allBookings = await getBookings();
+    const activeBookings = allBookings.filter(
+      b => b.date === date && b.branchId === branchId && b.status !== 'cancelado'
+    );
+    
+    if (employeeId !== 'any') {
+      return activeBookings
+        .filter(b => b.employeeId === employeeId)
+        .map(b => b.time);
+    } else {
+      const employeesList = getStorageItem('employees', INITIAL_EMPLOYEES);
+      const totalBarbers = employeesList.length || 3;
+      
+      const counts = {};
+      activeBookings.forEach(b => {
+        counts[b.time] = (counts[b.time] || 0) + 1;
+      });
+      
+      return Object.keys(counts).filter(time => counts[time] >= totalBarbers);
+    }
+  }
+  
+  try {
+    const snapshot = await getDocs(collection(db, 'bookings'));
+    const allBookings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const activeBookings = allBookings.filter(
+      b => b.date === date && b.branchId === branchId && b.status !== 'cancelado'
+    );
+    
+    if (employeeId !== 'any') {
+      return activeBookings
+        .filter(b => b.employeeId === employeeId)
+        .map(b => b.time);
+    } else {
+      const empSnapshot = await getDocs(collection(db, 'employees'));
+      const totalBarbers = empSnapshot.docs.length || 3;
+      
+      const counts = {};
+      activeBookings.forEach(b => {
+        counts[b.time] = (counts[b.time] || 0) + 1;
+      });
+      
+      return Object.keys(counts).filter(time => counts[time] >= totalBarbers);
+    }
+  } catch (error) {
+    console.error("Erro ao buscar horários ocupados:", error);
+    return [];
+  }
+};
+

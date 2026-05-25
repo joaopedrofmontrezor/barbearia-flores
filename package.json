@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "seed": "node scripts/init-db.js",
-    "seed:services": "node scripts/seed-services.js"
+    "seed:services": "node scripts/seed-services.js",
+    "create-admin": "node scripts/create-admin.js"
   },
   "dependencies": {
     "firebase": "^12.13.0",
