@@ -14,9 +14,9 @@ service cloud.firestore {
 
     // Bookings collection: anyone can create (write new booking), only admins can read, update, delete
     match /bookings/{bookingId} {
-      allow create: if true;
-      allow read, update, delete: if isAdmin();
-    }
+      allow create, read: if true;
+  allow update, delete: if isAdmin();
+}
 
     // Services, Employees, Testimonials, Gallery, Settings: anyone can read, only admins can write
     match /services/{serviceId} {
