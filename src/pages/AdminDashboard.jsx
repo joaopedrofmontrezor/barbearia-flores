@@ -300,7 +300,30 @@ const AdminDashboard = () => {
     if (type === 'service') {
       setServiceForm(item || { name: '', price: '', duration: '', description: '', active: true });
     } else if (type === 'employee') {
-      setEmployeeForm(item || { name: '', role: '', bio: '', photo: '', rating: 5.0, branchId: 'br1', branchName: 'Barbearia Flores - Benassi' });
+
+  const defaultBranch =
+    settings.branches?.[0] || {
+      id: 'br1',
+      name: 'Barbearia Flores - Benassi'
+    };
+
+  setEmployeeForm(
+    item
+      ? {
+          branchId: defaultBranch.id,
+          branchName: defaultBranch.name,
+          ...item
+        }
+      : {
+          name: '',
+          role: '',
+          bio: '',
+          photo: '',
+          rating: 5.0,
+          branchId: defaultBranch.id,
+          branchName: defaultBranch.name
+        }
+  );
     } else if (type === 'testimonial') {
       setTestimonialForm(item || { name: '', text: '', rating: 5 });
     } else if (type === 'gallery') {

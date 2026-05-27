@@ -13,6 +13,27 @@ import {
 import { logoutAdmin } from '../firebase/authService';
 import ServiceCard from '../components/ServiceCard';
 
+const getEmpBranchId = (emp) => {
+  if (emp.branchId) return emp.branchId;
+
+  if (emp.branchName) {
+    if (emp.branchName.includes('Bairro Alto')) return 'br2';
+    return 'br1';
+  }
+
+  // Compatibilidade com dados antigos
+  if (
+    emp.name === 'Gabriel Flores' ||
+    emp.name === 'João Vitor Moraes'
+  ) {
+    return 'br1';
+  }
+
+  return 'br2';
+};
+
+
+
 const LandingPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -922,7 +943,7 @@ const LandingPage = () => {
                     </button>
 
                     {/* DB staff list */}
-                    {employees.filter(emp => emp.branchId === bookingForm.branchId).map(emp => (
+                    {employees.filter(emp => getEmpBranchId(emp) === bookingForm.branchId).map(emp => (
                       <button
                         key={emp.id}
                         onClick={() => selectEmployee(emp)}
@@ -966,10 +987,13 @@ const LandingPage = () => {
                   <div className="space-y-3">
                     {(() => {
                       const selectedEmp = employees.find(e => e.id === bookingForm.employeeId);
-                      const availableServices = services.filter(srv => 
-                        bookingForm.employeeId === 'any' || 
+                      const availableServices = services.filter((srv) =>
+                        bookingForm.employeeId === 'any' ||
                         !bookingForm.employeeId ||
-                        (selectedEmp && selectedEmp.allowedServices?.includes(srv.id))
+                        !selectedEmp ||
+                        !selectedEmp.allowedServices ||
+                        selectedEmp.allowedServices.length === 0 ||
+                        selectedEmp.allowedServices.includes(srv.id)
                       );
                       
                       if (availableServices.length === 0) {
