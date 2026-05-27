@@ -9,15 +9,6 @@ Este repositório contém a base de código do **Barbearia Flores**, uma platafo
 ### 🔄 1. Abstração de Dados Híbrida (Modo Híbrido Resiliente)
 O sistema implementa uma camada de serviço híbrida inteligente (`dbService.js`). Se os parâmetros de ambiente do Firebase não estiverem configurados (`.env`), o sistema **ativa de forma transparente o modo offline simulado (Demo)** usando `LocalStorage`. Isso permite a homologação, testes rápidos de UX/UI e demonstração comercial instantânea sem necessidade de infraestrutura ativa.
 
-```mermaid
-graph TD
-    A[Aplicação Frontend React] --> B{Possui credenciais .env?}
-    B -- Sim --> C[Camada Real: Firebase Auth / Firestore / Storage]
-    B -- Não --> D[Camada Mock: LocalStorage Sandboxed]
-    C --> E[Persistência na Nuvem]
-    D --> F[Persistência Sandbox no Navegador]
-```
-
 ### 💈 2. Modelagem Relacional Dinâmica (Filiais & Catálogos)
 A modelagem NoSQL no Firestore foi estruturada para suportar múltiplos estabelecimentos (franquias):
 * **Unidades Físicas (`/branches`)**: Benassi e Bairro Alto.
