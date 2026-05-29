@@ -11,11 +11,14 @@ const AdminLogin = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   
-  // Segurança avançada: Proteção contra força bruta (Brute Force Protection)
+  // ==========================================
+  // --- PROTOCOLO DE SEGURANÇA CONTRA FORÇA BRUTA (BRUTE-FORCE MITIGATION) ---
+  // ==========================================
+  // Bloqueia tentativas repetidas de adivinhação de senhas no client-side para reduzir carga no Firebase Auth
   const [failedAttempts, setFailedAttempts] = useState(0);
-  const [lockoutTime, setLockoutTime] = useState(0); // em segundos
+  const [lockoutTime, setLockoutTime] = useState(0); // Tempo de espera imposto em segundos
 
-  // Efeito para decrementar o contador de bloqueio de segurança
+  // Timer reativo para decremento do bloqueio de segurança a cada segundo
   useEffect(() => {
     let timer;
     if (lockoutTime > 0) {
@@ -23,12 +26,16 @@ const AdminLogin = () => {
         setLockoutTime((prev) => prev - 1);
       }, 1000);
     } else if (lockoutTime === 0 && failedAttempts > 0) {
-      // Opcional: resetar tentativas caso o bloqueio tenha expirado
+      // Reseta o contador de falhas quando o tempo de lockout expira, permitindo novas tentativas
       setFailedAttempts(0);
     }
     return () => clearInterval(timer);
-  }, [lockoutTime]);
+  }, [lockoutTime, failedAttempts]);
 
+  /**
+   * Submissão do formulário de autenticação administrativa.
+   * Realiza validações básicas, checa o lockout temporário e mapeia erros do Firebase.
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email || !password) {
@@ -36,9 +43,9 @@ const AdminLogin = () => {
       return;
     }
 
-    // Se estiver no período de bloqueio, impede o submit
+    // Validação de segurança defensiva na submissão
     if (lockoutTime > 0) {
-      setError(`Acesso bloqueado por motivos de segurança. Aguarde mais ${lockoutTime} segundos.`);
+      setError(`Acesso temporariamente suspenso. Aguarde mais ${lockoutTime} segundos.`);
       return;
     }
 
@@ -46,51 +53,54 @@ const AdminLogin = () => {
     setError('');
 
     try {
+      // Aciona o serviço de autenticação unificado (Firebase ou Mock LocalStorage)
       await loginAdmin(email, password);
-      setFailedAttempts(0); // Reseta tentativas falhas em caso de sucesso
+      setFailedAttempts(0); // Reseta tentativas falhas em caso de login bem-sucedido
       navigate('/admin');
     } catch (err) {
-      console.error("Erro na tentativa de login do administrador:", err);
+      console.error("⚠️ [AdminLogin] Falha na tentativa de login administrativo:", err);
       
-      // Incrementa tentativas malsucedidas
+      // Registra a falha de login para o algoritmo de brute-force
       const nextAttempts = failedAttempts + 1;
       setFailedAttempts(nextAttempts);
 
-      // Tratamento de códigos de erro do Firebase Auth para português amigável e seguro
+      // --- MAPEAMENTO DE CÓDIGOS DE ERRO DO FIREBASE AUTH ---
+      // Converte erros obscuros do SDK do Firebase para mensagens amigáveis em português
       const errorCode = err.code || '';
-      let friendlyError = 'Erro ao realizar login.';
+      let friendlyError = 'Ocorreu um erro inesperado ao autenticar.';
 
       if (errorCode === 'auth/invalid-credential') {
-        friendlyError = 'Senha incorreta ou e-mail inválido. Por favor, verifique suas credenciais.';
+        friendlyError = 'Credenciais inválidas. Verifique o e-mail e a senha informada.';
       } else if (errorCode === 'auth/wrong-password') {
-        friendlyError = 'A senha informada está incorreta. Por favor, tente novamente.';
+        friendlyError = 'A senha digitada está incorreta. Tente novamente.';
       } else if (errorCode === 'auth/user-not-found') {
-        friendlyError = 'Nenhum administrador cadastrado com este e-mail.';
+        friendlyError = 'Não existe um administrador cadastrado com este e-mail.';
       } else if (errorCode === 'auth/too-many-requests') {
-        friendlyError = 'Conta temporariamente bloqueada devido a muitas tentativas de login malsucedidas. Tente mais tarde.';
+        friendlyError = 'Múltiplas tentativas bloqueadas pelo Firebase. Aguarde alguns minutos antes de tentar de novo.';
       } else if (errorCode === 'auth/invalid-email') {
-        friendlyError = 'O formato do e-mail inserido é inválido.';
+        friendlyError = 'O e-mail informado possui um formato inválido.';
       } else if (errorCode === 'auth/user-disabled') {
-        friendlyError = 'Esta conta de administrador foi desativada no sistema.';
+        friendlyError = 'Esta conta de administrador foi desativada pelo proprietário.';
       } else if (err.message && err.message.includes('Credenciais de demonstração incorretas')) {
-        // Mensagem customizada do mock do authService
-        friendlyError = 'Credenciais incorretas! A senha informada está errada para o usuário administrador de demonstração.';
+        // Exceção gerada pelo mock local do authService
+        friendlyError = 'A senha ou e-mail de demonstração está incorreto.';
       } else {
         friendlyError = err.message || friendlyError;
       }
 
-      // Se atingir 3 tentativas, ativa bloqueio temporário de 30 segundos
+      // Ativa bloqueio temporário de 30 segundos se atingir o teto de 3 tentativas seguidas
       if (nextAttempts >= 3) {
         setLockoutTime(30);
-        setError('Muitas tentativas falhas! Acesso bloqueado temporariamente por 30 segundos por motivos de segurança.');
+        setError('Acesso bloqueado por 30 segundos devido ao excesso de tentativas incorretas.');
       } else {
         const remaining = 3 - nextAttempts;
-        setError(`${friendlyError} (Você tem mais ${remaining} ${remaining === 1 ? 'tentativa restante' : 'tentativas restantes'} antes do bloqueio).`);
+        setError(`${friendlyError} (Você tem mais ${remaining} ${remaining === 1 ? 'tentativa' : 'tentativas'} antes do bloqueio temporário).`);
       }
     } finally {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="min-h-screen bg-dark-950 flex items-center justify-center p-4 relative overflow-hidden">
