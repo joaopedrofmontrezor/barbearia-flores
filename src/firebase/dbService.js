@@ -210,7 +210,17 @@ const INITIAL_BOOKINGS = [
   { id: 'b2', clientName: 'Rodrigo Faro', clientEmail: 'rodrigo@email.com', clientPhone: '11977776666', employeeId: 'e_3', employeeName: 'Gustavo Melo', serviceId: 's_2', serviceName: 'Barboterapia', price: 50, date: '2026-05-22', time: '16:00', status: 'pendente', createdAt: '2026-05-22T08:15:00.000Z' }
 ];
 
-// --- SETUP LOCAL STORAGE SE MOCK ---
+// ==========================================
+// --- PERSISTÊNCIA LOCAL (LOCAL STORAGE FALLBACK) ---
+// ==========================================
+
+/**
+ * Lê uma entrada do LocalStorage ou inicializa com dados padrão se estiver vazia.
+ * 
+ * @param {string} key - Chave do LocalStorage
+ * @param {any} initial - Dados de seed padrão para inicialização
+ * @returns {any} Dados parseados do LocalStorage ou dados iniciais padrão
+ */
 const getStorageItem = (key, initial) => {
   const data = localStorage.getItem(key);
   if (!data) {
@@ -220,21 +230,35 @@ const getStorageItem = (key, initial) => {
   return JSON.parse(data);
 };
 
+/**
+ * Grava dados no LocalStorage e notifica listeners reativos locais sobre a alteração.
+ * 
+ * @param {string} key - Chave do LocalStorage
+ * @param {any} data - Objeto ou Array a ser serializado
+ */
 const setStorageItem = (key, data) => {
   localStorage.setItem(key, JSON.stringify(data));
-  // Notifica ouvintes locais
+  // Notifica ouvintes ativos (ex: subscribeBookings) para atualização de dados em tempo real
   window.dispatchEvent(new Event(`localstorage_${key}_updated`));
 };
 
-// --- REGISTRO DE ASSINATURAS MOCK ---
+// Registro de assinaturas ativas para simulação de reatividade offline
 const mockSubscriptions = {};
 
-// --- API UNIFICADA DO BANCO ---
+// ==========================================
+// --- API UNIFICADA DE ACESSO A DADOS (CRUD) ---
+// ==========================================
 
-// 1. Serviços (CRUD)
+// 1. Serviços (CRUD) - Redirecionamentos para a camada modularizada em services.js
 export const getServices = _getServices;
 export const deleteService = _deleteService;
 
+/**
+ * Cria ou atualiza um serviço de forma transparente.
+ * 
+ * @param {Object} service - Objeto contendo dados do serviço
+ * @returns {Promise<Object>} Serviço salvo com ID atribuído
+ */
 export const saveService = async (service) => {
   if (service.id) {
     return _updateService(service.id, service);
@@ -244,6 +268,12 @@ export const saveService = async (service) => {
 };
 
 // 2. Funcionários / Equipe (CRUD)
+
+/**
+ * Retorna todos os funcionários (barbeiros) cadastrados na barbearia.
+ * 
+ * @returns {Promise<Array<Object>>} Lista de funcionários
+ */
 export const getEmployees = async () => {
   if (isMock) {
     return getStorageItem('employees', INITIAL_EMPLOYEES);
@@ -252,6 +282,12 @@ export const getEmployees = async () => {
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 };
 
+/**
+ * Cria ou atualiza as informações de um funcionário.
+ * 
+ * @param {Object} employee - Dados do funcionário
+ * @returns {Promise<Object>} Funcionário persistido
+ */
 export const saveEmployee = async (employee) => {
   if (isMock) {
     const list = await getEmployees();
@@ -265,6 +301,7 @@ export const saveEmployee = async (employee) => {
     setStorageItem('employees', list);
     return employee;
   }
+  
   if (employee.id) {
     const docRef = doc(db, 'employees', employee.id);
     const { id, ...data } = employee;
@@ -276,6 +313,12 @@ export const saveEmployee = async (employee) => {
   }
 };
 
+/**
+ * Exclui um barbeiro/funcionário do banco de dados pelo ID.
+ * 
+ * @param {string} id - ID do funcionário
+ * @returns {Promise<void>}
+ */
 export const deleteEmployee = async (id) => {
   if (isMock) {
     const list = await getEmployees();
@@ -287,6 +330,12 @@ export const deleteEmployee = async (id) => {
 };
 
 // 3. Depoimentos (CRUD)
+
+/**
+ * Recupera os depoimentos ativos dos clientes para exibição em carrossel.
+ * 
+ * @returns {Promise<Array<Object>>} Lista de depoimentos
+ */
 export const getTestimonials = async () => {
   if (isMock) {
     return getStorageItem('testimonials', INITIAL_TESTIMONIALS);
@@ -295,6 +344,12 @@ export const getTestimonials = async () => {
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 };
 
+/**
+ * Cria ou edita um depoimento de cliente.
+ * 
+ * @param {Object} testimonial - Dados do depoimento
+ * @returns {Promise<Object>} Depoimento salvo
+ */
 export const saveTestimonial = async (testimonial) => {
   if (isMock) {
     const list = await getTestimonials();
@@ -309,6 +364,7 @@ export const saveTestimonial = async (testimonial) => {
     setStorageItem('testimonials', list);
     return testimonial;
   }
+  
   if (testimonial.id) {
     const docRef = doc(db, 'testimonials', testimonial.id);
     const { id, ...data } = testimonial;
@@ -323,6 +379,12 @@ export const saveTestimonial = async (testimonial) => {
   }
 };
 
+/**
+ * Exclui um depoimento de cliente pelo ID.
+ * 
+ * @param {string} id - ID do depoimento
+ * @returns {Promise<void>}
+ */
 export const deleteTestimonial = async (id) => {
   if (isMock) {
     const list = await getTestimonials();
@@ -334,6 +396,12 @@ export const deleteTestimonial = async (id) => {
 };
 
 // 4. Galeria (CRUD)
+
+/**
+ * Carrega todas as fotos e itens do portfólio da galeria.
+ * 
+ * @returns {Promise<Array<Object>>} Lista de itens da galeria
+ */
 export const getGallery = async () => {
   if (isMock) {
     return getStorageItem('gallery', INITIAL_GALLERY);
@@ -342,6 +410,12 @@ export const getGallery = async () => {
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 };
 
+/**
+ * Salva ou edita um item na galeria de estilos.
+ * 
+ * @param {Object} item - Objeto do portfólio
+ * @returns {Promise<Object>} Item salvo
+ */
 export const saveGalleryItem = async (item) => {
   if (isMock) {
     const list = await getGallery();
@@ -355,6 +429,7 @@ export const saveGalleryItem = async (item) => {
     setStorageItem('gallery', list);
     return item;
   }
+  
   if (item.id) {
     const docRef = doc(db, 'gallery', item.id);
     const { id, ...data } = item;
@@ -366,6 +441,12 @@ export const saveGalleryItem = async (item) => {
   }
 };
 
+/**
+ * Exclui um item de imagem da galeria.
+ * 
+ * @param {string} id - ID do item
+ * @returns {Promise<void>}
+ */
 export const deleteGalleryItem = async (id) => {
   if (isMock) {
     const list = await getGallery();
@@ -376,25 +457,38 @@ export const deleteGalleryItem = async (id) => {
   await deleteDoc(doc(db, 'gallery', id));
 };
 
-// 5. Configurações (Get / Set)
+// 5. Configurações Globais (Get / Set)
+
+/**
+ * Busca as configurações globais da barbearia (contatos, unidades físicas e links).
+ * Executa uma higienização nos campos para manter a consistência dos dados de demonstração.
+ * 
+ * @returns {Promise<Object>} Objeto de configurações
+ */
 export const getSettings = async () => {
   if (isMock) {
     const current = getStorageItem('settings', INITIAL_SETTINGS);
     let updated = false;
+    
+    // Atualiza telefone antigo de forma proativa para consistência local
     if (current && current.phone === '5511999999999') {
       current.phone = '5516994206778';
       updated = true;
     }
+    
+    // Corrige unidades obsoletas (ex: Centro/Jardins) restabelecendo as unidades oficiais Benassi/Bairro Alto
     if (current && (!current.branches || !Array.isArray(current.branches) || current.branches.length === 0 || current.branches.some(b => b.name.includes('Unidade Centro') || b.name.includes('Unidade Jardins')))) {
       current.branches = INITIAL_SETTINGS.branches;
       current.address = INITIAL_SETTINGS.address;
       updated = true;
     }
+    
     if (updated) {
       setStorageItem('settings', current);
     }
     return current;
   }
+  
   try {
     const snapshot = await getDocs(collection(db, 'settings'));
     if (!snapshot.empty) {
@@ -403,11 +497,17 @@ export const getSettings = async () => {
     }
     return INITIAL_SETTINGS;
   } catch (error) {
-    console.error("Erro ao carregar configurações", error);
+    console.error("⚠️ [Firestore] Erro ao carregar configurações do Firebase. Usando fallback padrão:", error);
     return INITIAL_SETTINGS;
   }
 };
 
+/**
+ * Salva as configurações globais ou cria o documento base caso não exista no Firestore.
+ * 
+ * @param {Object} settings - Objeto de configurações contendo endereço, whatsapp e filiais
+ * @returns {Promise<Object>} Configurações persistidas
+ */
 export const saveSettings = async (settings) => {
   if (isMock) {
     setStorageItem('settings', settings);
@@ -424,7 +524,14 @@ export const saveSettings = async (settings) => {
   return settings;
 };
 
-// 6. Agendamentos (CRUD + Tempo Real)
+// 6. Agendamentos (CRUD + Sincronização em Tempo Real)
+
+/**
+ * Obtém todos os agendamentos registrados no sistema.
+ * Ordena os agendamentos de forma decrescente pela data de criação.
+ * 
+ * @returns {Promise<Array<Object>>} Lista de agendamentos
+ */
 export const getBookings = async () => {
   if (isMock) {
     return getStorageItem('bookings', INITIAL_BOOKINGS);
@@ -433,6 +540,14 @@ export const getBookings = async () => {
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 };
 
+/**
+ * Registra um agendamento no sistema.
+ * Implementa validação estrita contra OVERBOOKING (conflito duplo de horários) tanto local quanto em produção.
+ * 
+ * @param {Object} booking - Dados do agendamento contendo dia, hora, barbeiro e filial
+ * @returns {Promise<Object>} Agendamento criado ou editado
+ * @throws {Error} Se o horário já estiver reservado por outro cliente
+ */
 export const saveBooking = async (booking) => {
   const timestamp = new Date().toISOString();
   if (isMock) {
@@ -441,7 +556,7 @@ export const saveBooking = async (booking) => {
       const idx = list.findIndex(b => b.id === booking.id);
       if (idx !== -1) list[idx] = booking;
     } else {
-      // Validação crítica de conflito de horários (Overbooking)
+      // REGRA DE NEGÓCIO CRÍTICA: Prevenção de conflito de horários no simulador offline
       const isOccupied = list.some(b => 
         b.date === booking.date &&
         b.time === booking.time &&
@@ -461,13 +576,14 @@ export const saveBooking = async (booking) => {
     setStorageItem('bookings', list);
     return booking;
   }
+  
   if (booking.id) {
     const docRef = doc(db, 'bookings', booking.id);
     const { id, ...data } = booking;
     await setDoc(docRef, data, { merge: true });
     return booking;
   } else {
-    // Validação crítica de conflito de horários (Overbooking) em produção
+    // REGRA DE NEGÓCIO CRÍTICA: Prevenção de conflito de horários em produção (Firestore)
     const allBookings = await getBookings();
     const isOccupied = allBookings.some(b => 
       b.date === booking.date &&
@@ -490,6 +606,12 @@ export const saveBooking = async (booking) => {
   }
 };
 
+/**
+ * Exclui um agendamento do banco de dados pelo ID.
+ * 
+ * @param {string} id - ID do agendamento
+ * @returns {Promise<void>}
+ */
 export const deleteBooking = async (id) => {
   if (isMock) {
     const list = await getBookings();
@@ -500,7 +622,13 @@ export const deleteBooking = async (id) => {
   await deleteDoc(doc(db, 'bookings', id));
 };
 
-// 7. Inscrição em Tempo Real de Agendamentos (Usado no Admin Dashboard)
+/**
+ * Escuta atualizações de agendamentos em tempo real (onSnapshot / WebSocket).
+ * Permite que a tela do administrador atualize seus cards e faturamento dinamicamente sem recarregar.
+ * 
+ * @param {Function} onUpdate - Função callback acionada sempre que houver alteração: (bookings) => {}
+ * @returns {Function} Função de encerramento da escuta (Unsubscribe) para otimizar recursos
+ */
 export const subscribeBookings = (onUpdate) => {
   if (isMock) {
     const handler = () => {
@@ -508,23 +636,21 @@ export const subscribeBookings = (onUpdate) => {
       onUpdate(currentBookings.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
     };
     
-    // Dispara a primeira carga
+    // Dispara a carga de inicialização dos dados
     handler();
     
-    // Escuta eventos de atualização locais
+    // Assina eventos de atualização local disparados pelo setStorageItem
     window.addEventListener('localstorage_bookings_updated', handler);
-    
-    // Retorna a função de unsubscribe
     return () => {
       window.removeEventListener('localstorage_bookings_updated', handler);
     };
   }
   
-  // Real Firestore realtime subscription
+  // Conexão nativa via WebSocket (onSnapshot) com o Firestore
   const q = collection(db, 'bookings');
   return onSnapshot(q, (snapshot) => {
     const bookingsList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    // Ordena por data de criação decrescente
+    // Ordenação decrescente em memória para exibição correta
     bookingsList.sort((a, b) => {
       const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
       const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
@@ -532,11 +658,19 @@ export const subscribeBookings = (onUpdate) => {
     });
     onUpdate(bookingsList);
   }, (error) => {
-    console.error("Erro na escuta de agendamentos em tempo real:", error);
+    console.error("⚠️ [Firestore] Erro na escuta em tempo real de agendamentos:", error);
   });
 };
 
-// 8. Busca horários ocupados para evitar overbooking
+/**
+ * Busca a lista de horários ocupados para um barbeiro específico ou para a unidade física.
+ * Auxilia o formulário de agendamento a renderizar em vermelho os horários já preenchidos.
+ * 
+ * @param {string} date - Data formatada AAAA-MM-DD
+ * @param {string} employeeId - ID do barbeiro ou 'any' (se for selecionada a opção geral)
+ * @param {string} branchId - ID da filial
+ * @returns {Promise<Array<string>>} Lista de strings de horários ocupados (ex: ['10:00', '14:30'])
+ */
 export const getOccupiedHours = async (date, employeeId, branchId) => {
   if (isMock) {
     const allBookings = await getBookings();
@@ -549,6 +683,8 @@ export const getOccupiedHours = async (date, employeeId, branchId) => {
         .filter(b => b.employeeId === employeeId)
         .map(b => b.time);
     } else {
+      // Se for selecionada a opção de qualquer barbeiro, o horário só será considerado ocupado 
+      // se TODOS os barbeiros ativos daquela unidade estiverem ocupados simultaneamente naquele horário.
       const employeesList = getStorageItem('employees', INITIAL_EMPLOYEES);
       const totalBarbers = employeesList.length || 3;
       
@@ -584,8 +720,9 @@ export const getOccupiedHours = async (date, employeeId, branchId) => {
       return Object.keys(counts).filter(time => counts[time] >= totalBarbers);
     }
   } catch (error) {
-    console.error("Erro ao buscar horários ocupados:", error);
+    console.error("⚠️ [Firestore] Erro ao pesquisar horários ocupados na agenda:", error);
     return [];
   }
 };
+
 
