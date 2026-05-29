@@ -70,22 +70,29 @@ const LandingPage = () => {
     ]
   });
 
-  // UI States
+  // ==========================================
+  // --- ESTADOS DE CONTROLE DE INTERFACE (UI) ---
+  // ==========================================
   const [activeCategory, setActiveCategory] = useState('Todos');
   const [isNavbarTransparent, setIsNavbarTransparent] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [lightboxImage, setLightboxImage] = useState(null);
 
-  // Before/After comparison slider value (0 to 100)
+  // Controle de posição (0-100%) da barra divisória do comparador visual "Antes e Depois"
   const [sliderPosition, setSliderPosition] = useState(50);
   const [isSliding, setIsSliding] = useState(false);
 
-  // Selected Branch for UI details view
+  // Índice da filial selecionada na aba de contatos e endereços (Google Maps)
   const [selectedBranchIndex, setSelectedBranchIndex] = useState(0);
 
-  // Booking Form wizard state
-  const [bookingStep, setBookingStep] = useState(1); // 1: Unidade, 2: Barbeiro, 3: Serviço, 4: Data/Hora, 5: Confirmação/Contato, 6: Sucesso
+  // ==========================================
+  // --- ESTADOS DO PROCESSO DE AGENDAMENTO (WIZARD) ---
+  // ==========================================
+  
+  // Define a etapa atual do formulário:
+  // 1: Unidade, 2: Barbeiro, 3: Serviço, 4: Data/Hora, 5: Contato/Finalização, 6: Sucesso
+  const [bookingStep, setBookingStep] = useState(1);
   const [bookingForm, setBookingForm] = useState({
     branchId: '',
     branchName: '',
@@ -101,33 +108,40 @@ const LandingPage = () => {
     clientEmail: '',
   });
 
-  // Booking available times (Mock static hours, can be dynamic)
+  // Grade de horários padrão de atendimento da barbearia
   const availableHours = ['09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'];
 
-  // Testimonials Auto Scroll State
+  // Indice do depoimento de cliente em exibição rotativa automática
   const [testimonialIndex, setTestimonialIndex] = useState(0);
 
-  // Overbooking prevention state
+  // Estados auxiliares para validação dinâmica contra Overbooking (Conflitos de horários)
   const [occupiedHours, setOccupiedHours] = useState([]);
   const [loadingHours, setLoadingHours] = useState(false);
   const [dateError, setDateError] = useState('');
 
-  // Contact Form State
+  // ==========================================
+  // --- ESTADOS DO FORMULÁRIO DE CONTATO ---
+  // ==========================================
   const [contactForm, setContactForm] = useState({ name: '', email: '', message: '' });
   const [contactSuccess, setContactSuccess] = useState(false);
 
+  // ==========================================
+  // --- CICLOS DE VIDA E EFEITOS (LIFECYCLE HOOKS) ---
+  // ==========================================
+
+  // Efeito de inicialização geral: Encerra sessões administrativas e hidrata as coleções do Firebase/LocalStorage
   useEffect(() => {
-    // Encerra sessão do administrador ao voltar à página principal
+    // Segurança: se um administrador acessar a home, encerra a sessão ativa para evitar acessos indesejados
     const clearAdminSession = async () => {
       try {
         await logoutAdmin();
       } catch (err) {
-        console.error("Erro ao limpar sessão do admin:", err);
+        console.error("⚠️ [LandingPage] Erro ao limpar credenciais de administrador logado:", err);
       }
     };
     clearAdminSession();
 
-    // Load Data
+    // Carrega dados agregados concorrentemente usando Promise.all para acelerar o tempo de carregamento da página
     const loadData = async () => {
       try {
         const [srv, emp, tst, gal, setts] = await Promise.all([
@@ -143,12 +157,12 @@ const LandingPage = () => {
         setGallery(gal);
         if (setts) setSettings(setts);
       } catch (err) {
-        console.error("Erro ao carregar dados do frontend:", err);
+        console.error("⚠️ [LandingPage] Falha na hidratação dos dados iniciais do website:", err);
       }
     };
     loadData();
 
-    // Scroll listener for Navbar transparent effect and ScrollTop button
+    // Escuta rolagem de página para ajustar transparência da navbar e exibir botão "Voltar ao topo"
     const handleScroll = () => {
       setIsNavbarTransparent(window.scrollY < 80);
       setShowScrollTop(window.scrollY > 500);
@@ -158,7 +172,7 @@ const LandingPage = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Monitora redirecionamentos da página de serviços com serviço pré-selecionado
+  // Monitora redirecionamento de rotas com estado de autoBook ativo (ex: vindo da página /servicos)
   useEffect(() => {
     if (location.state && location.state.autoBook && location.state.serviceId) {
       setBookingForm(prev => ({
@@ -167,17 +181,19 @@ const LandingPage = () => {
         serviceName: location.state.serviceName,
         price: location.state.price
       }));
-      setBookingStep(1); // Reinicia e pede para escolher a unidade
+      setBookingStep(1); // Força reinício a partir do passo 1 (Escolha de unidade física)
+      
+      // Efeito de transição suave em scroll até a âncora do agendador
       setTimeout(() => {
         scrollToSection(bookingSectionRef);
       }, 500);
       
-      // Limpa o estado para evitar disparos em reloads futuros
+      // Limpa os parâmetros de histórico de rotas para prevenir disparos indesejados em reloads manuais
       window.history.replaceState({}, document.title);
     }
   }, [location]);
 
-  // Busca horários ocupados para evitar overbooking
+  // Consulta reativa de horários já reservados ao preencher data, profissional e unidade (Evita Overbooking)
   useEffect(() => {
     const fetchOccupied = async () => {
       if (!bookingForm.date || !bookingForm.employeeId || !bookingForm.branchId) {
@@ -189,7 +205,7 @@ const LandingPage = () => {
         const hours = await getOccupiedHours(bookingForm.date, bookingForm.employeeId, bookingForm.branchId);
         setOccupiedHours(hours);
       } catch (err) {
-        console.error("Erro ao carregar horários ocupados:", err);
+        console.error("⚠️ [LandingPage] Erro ao pesquisar horários ocupados no servidor:", err);
         setOccupiedHours([]);
       } finally {
         setLoadingHours(false);
@@ -199,7 +215,7 @@ const LandingPage = () => {
     fetchOccupied();
   }, [bookingForm.date, bookingForm.employeeId, bookingForm.branchId]);
 
-  // Testimonials slider interval
+  // Timer para o carrossel automático de depoimentos de clientes a cada 6 segundos
   useEffect(() => {
     if (testimonials.length === 0) return;
     const interval = setInterval(() => {
@@ -207,6 +223,7 @@ const LandingPage = () => {
     }, 6000);
     return () => clearInterval(interval);
   }, [testimonials]);
+
 
   const scrollToSection = (elementRef) => {
     elementRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -251,10 +268,22 @@ const LandingPage = () => {
   };
 
   // Booking handlers
+  // ==========================================
+  // --- FLUXO DE CONTROLE DO WIZARD DE AGENDAMENTO (REGRA DE NEGÓCIOS) ---
+  // ==========================================
+
+  /**
+   * Passo 1: Seleção da Unidade Física.
+   * Determina a ramificação física do agendamento.
+   * Inteligência UX: Se o usuário iniciou clicando em um barbeiro fora do wizard, o estado de
+   * `employeeId` já estará preenchido. Nesse caso, pula a etapa 2 (Escolha de barbeiro)
+   * e avança diretamente para a etapa 3 (Escolha de serviços habilitados).
+   * 
+   * @param {Object} branch - Filial selecionada
+   */
   const selectBranch = (branch) => {
     setBookingForm(prev => {
       const updated = { ...prev, branchId: branch.id, branchName: branch.name };
-      // Se o barbeiro já foi escolhido nos cards da equipe, pula direto para o serviço (passo 3)
       if (prev.employeeId) {
         setBookingStep(3);
       } else {
@@ -264,42 +293,69 @@ const LandingPage = () => {
     });
   };
 
+  /**
+   * Passo 2: Seleção do Profissional (Barbeiro).
+   * Armazena os dados do profissional responsável pela execução do serviço.
+   * 
+   * @param {Object} emp - Dados do funcionário ou 'any' para seleção livre
+   */
   const selectEmployee = (emp) => {
     setBookingForm({ ...bookingForm, employeeId: emp.id, employeeName: emp.name });
     setBookingStep(3);
   };
 
+  /**
+   * Passo 3: Seleção do Serviço.
+   * Define o preço e o serviço que o cliente irá realizar.
+   * 
+   * @param {Object} srv - Dados do serviço
+   */
   const selectService = (srv) => {
     setBookingForm({ ...bookingForm, serviceId: srv.id, serviceName: srv.name, price: srv.price });
     setBookingStep(4);
   };
 
+  /**
+   * Filtra dinamicamente a grade horária disponível baseado nas regras do dia da semana:
+   * 1. Domingos: Retorna lista vazia (estabelecimento fechado).
+   * 2. Sábados: O expediente é encurtado até 19h (bloqueia horários a partir das 19:00).
+   * 3. Dias de semana: Expediente normal até 21h (bloqueia horários a partir das 21:00).
+   * 
+   * @param {string} dateString - Data formatada AAAA-MM-DD
+   * @returns {Array<string>} Lista filtrada de horários disponíveis
+   */
   const getFilteredHoursForDate = (dateString) => {
     if (!dateString) return [];
     
     const [year, month, day] = dateString.split('-').map(Number);
     const dateObj = new Date(year, month - 1, day);
-    const dayOfWeek = dateObj.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+    const dayOfWeek = dateObj.getDay(); // 0 = Domingo, 1 = Segunda, ..., 6 = Sábado
     
     if (dayOfWeek === 0) {
       return []; // Domingo fechado
     }
     
     if (dayOfWeek === 6) {
-      // Sábado fechado mais cedo (19h, portanto último horário elegível é antes das 19h, ex: até 18h)
+      // Sábado encurtado: expediente encerra às 19:00h
       return availableHours.filter(h => {
         const hourNum = parseInt(h.split(':')[0], 10);
         return hourNum < 19;
       });
     }
     
-    // Segunda a Sexta: até 21h (portanto, até as 20:00 ou similar)
+    // Segunda a Sexta: expediente estendido até às 21:00h
     return availableHours.filter(h => {
       const hourNum = parseInt(h.split(':')[0], 10);
       return hourNum < 21;
     });
   };
 
+  /**
+   * Evento disparado quando o usuário altera a data de agendamento no input.
+   * Realiza validação síncrona contra agendamentos aos domingos no client-side.
+   * 
+   * @param {string} dateVal - Data AAAA-MM-DD
+   */
   const handleDateChange = (dateVal) => {
     setDateError('');
     if (!dateVal) {
@@ -320,18 +376,27 @@ const LandingPage = () => {
     setBookingForm(prev => ({ ...prev, date: dateVal, time: '' }));
   };
 
+  /**
+   * Passo 4: Seleção final da Data & Hora.
+   * Define o horário exato reservado para o cliente e avança para a revisão final.
+   */
   const selectDateTime = (date, time) => {
     setBookingForm({ ...bookingForm, date, time });
     setBookingStep(5);
   };
 
+  /**
+   * Passo 5: Confirmação e Submissão.
+   * Grava o agendamento no banco de dados e abre canal de redirecionamento para o WhatsApp corporativo.
+   * A mensagem final é gerada via template configurável, mapeando tags como {data}, {hora}, {barbeiro}.
+   */
   const handleBookingSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Salva no banco de dados (Firestore / LocalStorage)
+      // Persiste os dados na camada DB (Firestore / LocalStorage)
       await saveBooking(bookingForm);
       
-      // Formata a mensagem do Whatsapp de acordo com o template cadastrado
+      // Formata a mensagem com base no template dinâmico das configurações da barbearia
       let template = settings.whatsappMessageTemplate || 'Confirmando agendamento para {data} às {hora} com {barbeiro} (Serviço: {servico}) na unidade {unidade}';
       const formattedDate = bookingForm.date.split('-').reverse().join('/');
       const message = template
@@ -341,16 +406,16 @@ const LandingPage = () => {
         .replace('{servico}', bookingForm.serviceName)
         .replace('{unidade}', bookingForm.branchName);
 
-      // Telefones das unidades correspondentes
+      // Resolve o contato telefônico adequado da unidade selecionada
       const selectedBranch = settings.branches?.find(b => b.id === bookingForm.branchId);
       const branchPhone = selectedBranch?.phone || settings.phone;
 
-      // Redireciona para o Whatsapp
+      // Monta URL de API pública do WhatsApp com mensagem codificada para o atendente
       const waUrl = `https://wa.me/${branchPhone}?text=${encodeURIComponent(message)}`;
       
-      setBookingStep(6);
+      setBookingStep(6); // Exibe tela de sucesso e contagem de redirecionamento
       
-      // Abre o WhatsApp
+      // Abre o WhatsApp em aba separada após pequeno delay para dar feedback visual de sucesso
       setTimeout(() => {
         window.open(waUrl, '_blank');
       }, 1500);
@@ -360,6 +425,9 @@ const LandingPage = () => {
     }
   };
 
+  /**
+   * Reinicia completamente o wizard de agendamento limpando as informações do formulário.
+   */
   const resetBooking = () => {
     setBookingStep(1);
     setBookingForm({
@@ -371,6 +439,7 @@ const LandingPage = () => {
       serviceName: '',
       price: 0,
       date: '',
+
       time: '',
       clientName: '',
       clientPhone: '',
@@ -821,12 +890,36 @@ const LandingPage = () => {
                 <div className="px-8 pb-8 pt-4 border-t border-dark-950/50">
                   <button 
                     onClick={() => {
+                      // ==========================================
+                      // --- FLUXO INTELIGENTE DE PREENCHIMENTO DE BARBEIRO ---
+                      // ==========================================
+                      // 1. Resolve o ID da unidade à qual o profissional está vinculado
+                      const branchId = getEmpBranchId(item);
+                      
+                      // 2. Busca a unidade correspondente dentro das filiais cadastradas para extrair o nome.
+                      // Caso não encontre (por ex. delay na carga do Firestore), fornece fallbacks seguros baseados no ID.
+                      const selectedBranch = settings.branches?.find(b => b.id === branchId) || {
+                        id: branchId,
+                        name: item.branchName || (branchId === 'br1' ? 'Barbearia Flores - Benassi' : 'Barbearia Flores - Bairro Alto')
+                      };
+
+                      // 3. Atualiza o formulário pré-selecionando o barbeiro E sua respectiva filial de atuação
                       setBookingForm({
                         ...bookingForm,
                         employeeId: item.id,
-                        employeeName: item.name
+                        employeeName: item.name,
+                        branchId: selectedBranch.id,
+                        branchName: selectedBranch.name
                       });
-                      setBookingStep(1); // Vai primeiro para escolha de unidade
+
+                      // 4. Salto de Etapa (Wizard Bypass): 
+                      // Como a filial e o barbeiro já foram definidos pelo clique no card, pulamos as etapas
+                      // 1 (Escolha de Unidade) e 2 (Escolha de Barbeiro). O usuário avança direto para a etapa 3 (Escolha de Serviços).
+                      // Cuidado futuro: se no futuro um barbeiro passar a atender em múltiplas filiais, essa lógica
+                      // precisará de uma tela intermediária de seleção de filial antes do menu de serviços.
+                      setBookingStep(3);
+                      
+                      // 5. Rola o usuário de forma suave até o painel de agendamento online
                       scrollToSection(bookingSectionRef);
                     }}
                     className="w-full btn-outline py-3 rounded-lg text-xs font-bold"
