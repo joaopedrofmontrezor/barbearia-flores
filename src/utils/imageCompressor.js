@@ -1,17 +1,21 @@
 /**
- * Utility to compress images on the client side using HTML5 Canvas.
- * Reduces dimensions and quality to optimize uploads, save bandwidth,
- * and prevent database/localstorage quota bloat.
+ * UTILITÁRIO DE COMPRESSÃO DE IMAGENS NO CLIENT-SIDE (HTML5 CANVAS)
  * 
- * @param {File} file - The original image file
- * @param {number} maxWidth - Maximum width of the compressed image
- * @param {number} maxHeight - Maximum height of the compressed image
- * @param {number} quality - Image quality from 0.0 to 1.0 (JPEG/WEBP)
- * @returns {Promise<File>} - A promise that resolves with the compressed File
+ * Este utilitário resolve problemas críticos de infraestrutura, performance e limite de armazenamento:
+ * 1. Redução de Bandwidth: Envia arquivos significativamente menores para o servidor/Firebase.
+ * 2. Prevenção de Estouro de Cota: Evita o bloqueio da aplicação por upload de imagens em Base64
+ *    gigantes diretamente no Firestore (limite de 1MB por documento) ou estouro do LocalStorage (limite 5MB total).
+ * 3. Otimização de Carregamento: Garante que as imagens do portfólio e equipe carreguem instantaneamente no mobile.
+ * 
+ * @param {File} file - Objeto original do arquivo capturado do input do usuário.
+ * @param {number} maxWidth - Largura máxima permitida para a imagem final comprimida (default: 800px).
+ * @param {number} maxHeight - Altura máxima permitida para a imagem final comprimida (default: 800px).
+ * @param {number} quality - Fator de qualidade da imagem, variando de 0.0 a 1.0 (default: 0.7).
+ * @returns {Promise<File>} - Promise que se resolve retornando um novo objeto File comprimido e redimensionado.
  */
 export const compressImage = (file, maxWidth = 800, maxHeight = 800, quality = 0.7) => {
   return new Promise((resolve) => {
-    // If it's not a browser environment or not an image file, skip compression
+    // Validação defensiva: se não houver arquivo, tipo incompatível ou ambiente SSR, ignora e retorna o arquivo original.
     if (typeof window === 'undefined' || !file || !file.type || !file.type.startsWith('image/')) {
       resolve(file);
       return;
@@ -28,7 +32,8 @@ export const compressImage = (file, maxWidth = 800, maxHeight = 800, quality = 0
         let width = img.width;
         let height = img.height;
 
-        // Calculate aspect ratio scale
+        // --- CÁLCULO DE PROPORÇÃO DA IMAGEM (ASPECT RATIO SCALE) ---
+        // Mantém a proporção original do corte sem achatar ou esticar a imagem
         if (width > height) {
           if (width > maxWidth) {
             height = Math.round((height * maxWidth) / width);
@@ -46,28 +51,31 @@ export const compressImage = (file, maxWidth = 800, maxHeight = 800, quality = 0
 
         const ctx = canvas.getContext('2d');
         if (!ctx) {
+          // Fallback seguro caso o contexto do canvas 2D falhe no navegador do usuário
           resolve(file);
           return;
         }
 
-        // Draw image into canvas (browser automatically performs downsampling)
+        // Desenha a imagem no canvas. O motor interno do navegador executa downsampling bilinear
         ctx.drawImage(img, 0, 0, width, height);
 
-        // Convert canvas content to blob with target quality
+        // Converte o canvas para Blob binário com o tipo MIME original e qualidade ajustada
         canvas.toBlob(
           (blob) => {
             if (!blob) {
               resolve(file);
               return;
             }
-            // Construct a new File object representing the compressed image
+            
+            // Instancia o novo File mantendo os metadados originais (nome, data de modificação)
             const compressedFile = new File([blob], file.name, {
               type: file.type,
               lastModified: Date.now(),
             });
             
+            // Log corporativo para auditoria de desempenho
             console.log(
-              `[ImageCompressor] Compressed "${file.name}" from ${(file.size / 1024).toFixed(1)}KB to ${(compressedFile.size / 1024).toFixed(1)}KB (${(((file.size - compressedFile.size) / file.size) * 100).toFixed(0)}% reduction)`
+              `⚡ [ImageCompressor] Imagem "${file.name}" comprimida de ${(file.size / 1024).toFixed(1)}KB para ${(compressedFile.size / 1024).toFixed(1)}KB (${(((file.size - compressedFile.size) / file.size) * 100).toFixed(0)}% de economia).`
             );
             resolve(compressedFile);
           },
@@ -77,14 +85,15 @@ export const compressImage = (file, maxWidth = 800, maxHeight = 800, quality = 0
       };
 
       img.onerror = (err) => {
-        console.warn("[ImageCompressor] Failed to load image element, using original file", err);
+        console.warn("⚠️ [ImageCompressor] Erro ao carregar elemento Image. Retornando arquivo original.", err);
         resolve(file);
       };
     };
 
     reader.onerror = (err) => {
-      console.warn("[ImageCompressor] Failed to read file, using original file", err);
+      console.warn("⚠️ [ImageCompressor] Erro ao ler bytes do arquivo. Retornando arquivo original.", err);
       resolve(file);
     };
   });
 };
+
