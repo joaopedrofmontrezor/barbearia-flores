@@ -11,7 +11,10 @@ import {
   orderBy 
 } from 'firebase/firestore';
 
-// Lista oficial dos serviços da Barbearia Flores
+/**
+ * LISTA OFICIAL DE SERVIÇOS PADRÃO (SEEDING DATA)
+ * Coleção de serviços padrão que servem de "seed" para popular a barbearia recém-instalada.
+ */
 export const SEED_SERVICES = [
   {
     name: "Barba Simples",
@@ -121,11 +124,16 @@ export const SEED_SERVICES = [
 
 const LOCAL_STORAGE_KEY = 'services';
 
-// Helpers para o Mock LocalStorage
+// --- MOCK STORAGE HELPERS ---
+
+/**
+ * Busca a lista de serviços do LocalStorage. Se não existir, popula com os seeds iniciais.
+ * 
+ * @returns {Array<Object>} Lista de serviços com IDs locais
+ */
 const getStorageServices = () => {
   const data = localStorage.getItem(LOCAL_STORAGE_KEY);
   if (!data) {
-    // Adiciona IDs fictícios para compatibilidade local
     const servicesWithIds = SEED_SERVICES.map((s, index) => ({
       id: `s_${index + 1}`,
       ...s
@@ -136,14 +144,23 @@ const getStorageServices = () => {
   return JSON.parse(data);
 };
 
+/**
+ * Grava a lista de serviços no LocalStorage e dispara evento global de atualização.
+ * 
+ * @param {Array<Object>} services - Nova lista de serviços
+ */
 const saveStorageServices = (services) => {
   localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(services));
   window.dispatchEvent(new Event(`localstorage_${LOCAL_STORAGE_KEY}_updated`));
 };
 
+// --- CRUD SERVICES API UNIFICADA ---
+
 /**
- * Busca todos os serviços ativos salvos no banco de dados e os retorna ordenados por nome.
- * Em modo mock, busca do LocalStorage.
+ * Busca todos os serviços cadastrados e ativos no banco de dados.
+ * Ordena alfabeticamente pelo nome do serviço.
+ * 
+ * @returns {Promise<Array<Object>>} Lista de serviços
  */
 export const getServices = async () => {
   if (isMock) {
@@ -155,6 +172,7 @@ export const getServices = async () => {
 
   try {
     const servicesRef = collection(db, 'services');
+    // Tenta executar ordenação indexada no Firestore
     const q = query(servicesRef, orderBy('name', 'asc'));
     const snapshot = await getDocs(q);
     
@@ -162,7 +180,8 @@ export const getServices = async () => {
       .map(doc => ({ id: doc.id, ...doc.data() }))
       .filter(s => s.active !== false);
   } catch (error) {
-    console.warn("Erro ao ordenar no Firestore (pode faltar índice). Ordenando em memória:", error);
+    // Fallback gracioso em memória caso o Firestore ainda não tenha o índice composto compilado
+    console.warn("⚠️ [Firestore] Falta índice ordenado para Serviços. Efetuando ordenação local em memória:", error);
     const servicesRef = collection(db, 'services');
     const snapshot = await getDocs(servicesRef);
     return snapshot.docs
@@ -173,7 +192,12 @@ export const getServices = async () => {
 };
 
 /**
- * Cria um novo serviço no banco de dados. Impede duplicação por nome (case-insensitive).
+ * Cria um novo serviço no banco de dados.
+ * Impede duplicações de nomes ignorando espaços e letras maiúsculas/minúsculas.
+ * 
+ * @param {Object} serviceData - Dados do novo serviço
+ * @returns {Promise<Object>} Serviço criado com seu ID gerado
+ * @throws {Error} Caso o nome do serviço já exista cadastrado
  */
 export const createService = async (serviceData) => {
   const nameTrimmed = serviceData.name.trim();
@@ -197,12 +221,12 @@ export const createService = async (serviceData) => {
     return serviceToSave;
   }
 
-  // Firestore duplication check
+  // Validação de duplicidade no Firestore de forma resiliente
   const servicesRef = collection(db, 'services');
   const snapshot = await getDocs(servicesRef);
   const duplicate = snapshot.docs.some(doc => doc.data().name.toLowerCase() === nameTrimmed.toLowerCase());
   if (duplicate) {
-    throw new Error(`O serviço "${nameTrimmed}" já existe no banco de dados.`);
+    throw new Error(`O serviço "${nameTrimmed}" já existe no banco de dados da barbearia.`);
   }
 
   const docRef = await addDoc(servicesRef, serviceToSave);
@@ -210,7 +234,12 @@ export const createService = async (serviceData) => {
 };
 
 /**
- * Atualiza um serviço existente no banco de dados. Garante que o nome não colida com outro serviço.
+ * Atualiza um serviço existente identificando conflitos de nome.
+ * 
+ * @param {string} id - ID do serviço
+ * @param {Object} serviceData - Novos campos a serem mesclados
+ * @returns {Promise<Object>} Objeto atualizado
+ * @throws {Error} Caso o ID seja inválido ou o nome editado colida com outro registro
  */
 export const updateService = async (id, serviceData) => {
   const nameTrimmed = serviceData.name ? serviceData.name.trim() : '';
@@ -238,13 +267,13 @@ export const updateService = async (id, serviceData) => {
     return list[idx];
   }
 
-  // Firestore update & duplication check
+  // Validação de duplicidade e atualização no Firestore
   if (nameTrimmed) {
     const servicesRef = collection(db, 'services');
     const snapshot = await getDocs(servicesRef);
     const duplicate = snapshot.docs.some(doc => doc.id !== id && doc.data().name.toLowerCase() === nameTrimmed.toLowerCase());
     if (duplicate) {
-      throw new Error(`Já existe outro serviço no Firestore com o nome "${nameTrimmed}".`);
+      throw new Error(`Já existe outro serviço no banco de dados com o nome "${nameTrimmed}".`);
     }
   }
 
@@ -255,7 +284,10 @@ export const updateService = async (id, serviceData) => {
 };
 
 /**
- * Deleta (remove permanentemente) um serviço pelo ID.
+ * Remove permanentemente um serviço pelo ID.
+ * 
+ * @param {string} id - ID do serviço a ser deletado
+ * @returns {Promise<void>}
  */
 export const deleteService = async (id) => {
   if (isMock) {
@@ -268,3 +300,4 @@ export const deleteService = async (id) => {
   const docRef = doc(db, 'services', id);
   await deleteDoc(docRef);
 };
+
