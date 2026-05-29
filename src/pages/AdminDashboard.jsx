@@ -24,7 +24,9 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('bookings');
   const [currentUser, setCurrentUser] = useState(null);
   
-  // Data lists state
+  // ==========================================
+  // --- COLEÇÃO DE ESTADOS DOS MÓDULOS (DATA LAYERS) ---
+  // ==========================================
   const [bookings, setBookings] = useState([]);
   const [services, setServices] = useState([]);
   const [employees, setEmployees] = useState([]);
@@ -34,41 +36,52 @@ const AdminDashboard = () => {
     phone: '', email: '', address: '', openingHours: '', whatsappMessageTemplate: '', branches: []
   });
 
-  // Loading states
+  // ==========================================
+  // --- CONTROLES DE INTERFACE (UI & LOADERS) ---
+  // ==========================================
   const [loading, setLoading] = useState(true);
-  const [actionLoading, setActionLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false); // loader para operações de escrita (escudo de double-click)
 
-  // Modal / Form States
+  // ==========================================
+  // --- GERENCIAMENTO DE FORMULÁRIOS & MODAIS ---
+  // ==========================================
   const [showModal, setShowModal] = useState(false);
-  const [modalType, setModalType] = useState(''); // 'service', 'employee', 'testimonial', 'gallery'
-  const [editingItem, setEditingItem] = useState(null); // Item being edited
+  const [modalType, setModalType] = useState(''); // 'service' | 'employee' | 'testimonial' | 'gallery'
+  const [editingItem, setEditingItem] = useState(null); // Item em edição (null indica criação)
   const [uploadFile, setUploadFile] = useState(null);
   const [uploadPreview, setUploadPreview] = useState('');
 
-  // Form Fields State
+  // Estados dos formulários de dados isolados por entidade
   const [serviceForm, setServiceForm] = useState({ name: '', price: '', duration: '', description: '', active: true });
   const [employeeForm, setEmployeeForm] = useState({ name: '', role: '', bio: '', photo: '', rating: 5.0, branchId: 'br1', branchName: 'Barbearia Flores - Benassi' });
   const [testimonialForm, setTestimonialForm] = useState({ name: '', text: '', rating: 5 });
   const [galleryForm, setGalleryForm] = useState({ title: '', category: 'Corte', image: '' });
 
-  // Get current user and start real-time subscription for bookings
+  // ==========================================
+  // --- INICIALIZAÇÃO E SINCRONIZAÇÃO DE DADOS (SUBSCRIBE) ---
+  // ==========================================
   useEffect(() => {
     setCurrentUser(getSessionUser());
     
-    // Subscribe to bookings (realtime listener)
+    // SUBSCREVE ESCUTA EM TEMPO REAL (Firestore WebSocket / LocalStorage Events)
+    // Garante que o dashboard reflita instantaneamente novos agendamentos ou cancelamentos criados por clientes
     const unsubscribeBookings = subscribeBookings((updatedBookings) => {
       setBookings(updatedBookings);
       setLoading(false);
     });
 
-    // Fetch other collections
+    // Carrega de forma assíncrona as outras tabelas estáticas (Equipe, Serviços, Galeria, etc.)
     loadStaticData();
 
+    // Executa unsubscribe na desmontagem para evitar vazamentos de memória (leak prevention)
     return () => {
       unsubscribeBookings();
     };
   }, []);
 
+  /**
+   * Busca em lote todas as coleções estáticas necessárias para alimentar as tabelas administrativas.
+   */
   const loadStaticData = async () => {
     try {
       const [srv, emp, tst, gal, setts] = await Promise.all([
@@ -84,16 +97,25 @@ const AdminDashboard = () => {
       setGallery(gal);
       setSettings(setts);
     } catch (err) {
-      console.error("Erro ao carregar dados do dashboard:", err);
+      console.error("⚠️ [AdminDashboard] Erro ao sincronizar coleções secundárias:", err);
     }
   };
 
+  /**
+   * Encerra a sessão ativa do administrador e redireciona para o portal principal.
+   */
   const handleLogout = async () => {
     await logoutAdmin();
     navigate('/');
   };
 
-  // Status Change handlers
+  // ==========================================
+  // --- MANIPULADORES DE STATUS DE AGENDAMENTO ---
+  // ==========================================
+
+  /**
+   * Atualiza o estado de um agendamento (Confirmado / Cancelado).
+   */
   const handleUpdateBookingStatus = async (booking, newStatus) => {
     try {
       setActionLoading(true);
@@ -105,6 +127,9 @@ const AdminDashboard = () => {
     }
   };
 
+  /**
+   * Remove permanentemente um registro de agendamento.
+   */
   const handleDeleteBooking = async (id) => {
     if (window.confirm("Deseja realmente excluir este agendamento?")) {
       try {
@@ -118,7 +143,13 @@ const AdminDashboard = () => {
     }
   };
 
-  // Image Upload helper
+  // ==========================================
+  // --- ASSISTENTE DE UPLOAD DE FOTOS ---
+  // ==========================================
+
+  /**
+   * Trata a seleção de arquivo gerando uma URL temporária de visualização (preview).
+   */
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -127,18 +158,27 @@ const AdminDashboard = () => {
     }
   };
 
-  // Save changes handler for CRUDs
+  // ==========================================
+  // --- OPERAÇÕES CRUD SALVAR / EDITAR ---
+  // ==========================================
+
+  /**
+   * Roteador de persistência de dados. Identifica o módulo ativo e processa
+   * a compressão de imagens antes de salvar no Storage e gravar no banco de dados.
+   */
   const handleSaveItem = async (e) => {
     e.preventDefault();
     setActionLoading(true);
     try {
       let imageUrl = '';
       if (uploadFile) {
-        // Comprime a imagem no lado do cliente antes do upload
+        // COMPRESSÃO LADO DO CLIENTE: Otimiza largura/altura e fator de qualidade 
+        // para reduzir consumo de storage e dados antes da transferência
         const compressed = await compressImage(uploadFile, 800, 800, 0.7);
         imageUrl = await uploadMedia(compressed, modalType);
       }
 
+      // --- MÓDULO: SERVIÇOS ---
       if (modalType === 'service') {
         const item = { 
           ...serviceForm, 
@@ -153,6 +193,7 @@ const AdminDashboard = () => {
         }
         setServices(await getServices());
       } 
+      // --- MÓDULO: EQUIPE ---
       else if (modalType === 'employee') {
         const item = { ...employeeForm, rating: Number(employeeForm.rating) };
         if (imageUrl) item.photo = imageUrl;
@@ -161,12 +202,14 @@ const AdminDashboard = () => {
         await saveEmployee(item);
         setEmployees(await getEmployees());
       }
+      // --- MÓDULO: DEPOIMENTOS ---
       else if (modalType === 'testimonial') {
         const item = { ...testimonialForm, rating: Number(testimonialForm.rating) };
         if (editingItem) item.id = editingItem.id;
         await saveTestimonial(item);
         setTestimonials(await getTestimonials());
       }
+      // --- MÓDULO: GALERIA ---
       else if (modalType === 'gallery') {
         const item = { ...galleryForm };
         if (imageUrl) item.image = imageUrl;
@@ -189,7 +232,13 @@ const AdminDashboard = () => {
     }
   };
 
-  // Delete helpers
+  // ==========================================
+  // --- OPERAÇÕES CRUD EXCLUSÃO ---
+  // ==========================================
+
+  /**
+   * Exclui um item selecionado identificando a entidade e atualizando o estado em tela.
+   */
   const handleDeleteItem = async (type, id) => {
     if (window.confirm("Deseja realmente excluir este item?")) {
       setActionLoading(true);
@@ -215,7 +264,14 @@ const AdminDashboard = () => {
     }
   };
 
-  // Seed default services handler
+  // ==========================================
+  // --- POPULAÇÃO INICIAL DE SERVIÇOS (SEED) ---
+  // ==========================================
+
+  /**
+   * Importa de forma assíncrona (lazy chunk loading) os serviços oficiais e os registra.
+   * Evita duplicar nomes de serviços já cadastrados para segurança dos dados.
+   */
   const handleSeedServices = async () => {
     if (window.confirm("Deseja realmente carregar a lista de serviços padrão da Barbearia Flores? Serviços já existentes com o mesmo nome não serão duplicados.")) {
       setActionLoading(true);
@@ -244,7 +300,13 @@ const AdminDashboard = () => {
     }
   };
 
-  // Settings Save handler
+  // ==========================================
+  // --- GESTÃO DINÂMICA DE FILIAIS (BRANCHES) ---
+  // ==========================================
+
+  /**
+   * Persiste as configurações de contatos e filiais.
+   */
   const handleSaveSettings = async (e) => {
     e.preventDefault();
     setActionLoading(true);
@@ -258,12 +320,18 @@ const AdminDashboard = () => {
     }
   };
 
+  /**
+   * Atualiza campos aninhados de uma filial específica na lista do estado.
+   */
   const handleUpdateBranchField = (index, field, value) => {
     const updatedBranches = [...(settings.branches || [])];
     updatedBranches[index] = { ...updatedBranches[index], [field]: value };
     setSettings({ ...settings, branches: updatedBranches });
   };
 
+  /**
+   * Cria uma nova filial física na lista local de configurações.
+   */
   const handleAddBranch = () => {
     const newBranch = {
       id: 'br_' + Date.now(),
@@ -279,6 +347,9 @@ const AdminDashboard = () => {
     });
   };
 
+  /**
+   * Remove uma filial física da lista de configurações mantendo validação estrita de pelo menos uma ativa.
+   */
   const handleRemoveBranch = (index) => {
     if ((settings.branches || []).length <= 1) {
       alert("Você precisa manter pelo menos uma unidade cadastrada.");
@@ -290,7 +361,13 @@ const AdminDashboard = () => {
     }
   };
 
-  // Modal helpers
+  // ==========================================
+  // --- CONTROLE DE MODAL DE INSERÇÃO/EDIÇÃO ---
+  // ==========================================
+
+  /**
+   * Prepara os campos dos formulários baseado na ação de edição ou criação e ativa o modal na tela.
+   */
   const openModal = (type, item = null) => {
     setModalType(type);
     setEditingItem(item);
@@ -300,30 +377,29 @@ const AdminDashboard = () => {
     if (type === 'service') {
       setServiceForm(item || { name: '', price: '', duration: '', description: '', active: true });
     } else if (type === 'employee') {
+      const defaultBranch =
+        settings.branches?.[0] || {
+          id: 'br1',
+          name: 'Barbearia Flores - Benassi'
+        };
 
-  const defaultBranch =
-    settings.branches?.[0] || {
-      id: 'br1',
-      name: 'Barbearia Flores - Benassi'
-    };
-
-  setEmployeeForm(
-    item
-      ? {
-          branchId: defaultBranch.id,
-          branchName: defaultBranch.name,
-          ...item
-        }
-      : {
-          name: '',
-          role: '',
-          bio: '',
-          photo: '',
-          rating: 5.0,
-          branchId: defaultBranch.id,
-          branchName: defaultBranch.name
-        }
-  );
+      setEmployeeForm(
+        item
+          ? {
+              branchId: defaultBranch.id,
+              branchName: defaultBranch.name,
+              ...item
+            }
+          : {
+              name: '',
+              role: '',
+              bio: '',
+              photo: '',
+              rating: 5.0,
+              branchId: defaultBranch.id,
+              branchName: defaultBranch.name
+            }
+      );
     } else if (type === 'testimonial') {
       setTestimonialForm(item || { name: '', text: '', rating: 5 });
     } else if (type === 'gallery') {
@@ -332,6 +408,9 @@ const AdminDashboard = () => {
     setShowModal(true);
   };
 
+  /**
+   * Limpa referências e fecha o modal.
+   */
   const closeModal = () => {
     setShowModal(false);
     setEditingItem(null);
@@ -339,13 +418,20 @@ const AdminDashboard = () => {
     setUploadPreview('');
   };
 
-  // Helper stats calculation
+  // ==========================================
+  // --- CONTADORES E ESTATÍSTICAS FINANCEIRAS ---
+  // ==========================================
+
+  /**
+   * Soma o preço de todos os agendamentos de status 'confirmado' para estatísticas financeiras.
+   */
   const getFaturamentoEstimado = () => {
     return bookings
       .filter(b => b.status === 'confirmado')
       .reduce((sum, b) => sum + (b.price || 0), 0);
   };
 
+  // Calcula o total de agendamentos agendados para a data de hoje
   const totalHoje = bookings.filter(b => {
     const hoje = new Date().toISOString().split('T')[0];
     return b.date === hoje;

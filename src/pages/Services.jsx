@@ -7,11 +7,18 @@ import ServiceCard from '../components/ServiceCard';
 
 const Services = () => {
   const navigate = useNavigate();
+  
+  // ==========================================
+  // --- GERENCIAMENTO DE ESTADO E CARREGAMENTO ---
+  // ==========================================
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Busca os serviços do banco de dados ao montar a página
+  /**
+   * Hidrata o estado local buscando a lista de serviços ativos cadastrados no banco.
+   * Realiza o tratamento preventivo de falhas de conectividade com fallbacks visuais adequados.
+   */
   const fetchServicesData = async () => {
     setLoading(true);
     setError(null);
@@ -19,18 +26,25 @@ const Services = () => {
       const data = await getServices();
       setServices(data);
     } catch (err) {
-      console.error("Erro ao carregar serviços:", err);
-      setError("Não foi possível carregar os serviços. Verifique sua conexão ou tente novamente.");
+      console.error("⚠️ [ServicesPage] Falha de conexão ao carregar a listagem de serviços:", err);
+      setError("Não foi possível estabelecer contato com o servidor para carregar o menu de serviços. Verifique sua rede.");
     } finally {
       setLoading(false);
     }
   };
 
+  // Efeito de montagem (Mounting LifeCycle)
   useEffect(() => {
     fetchServicesData();
   }, []);
 
-  // Trata a ação de agendamento, passando os dados do serviço por estado
+  /**
+   * Trata a ação de agendamento acionada em um ServiceCard.
+   * Navega para a Landing Page (Home) transmitindo os parâmetros de autoBook no histórico de rotas.
+   * Isso força o wizard de agendamento na Landing Page a inicializar pré-preenchido com o serviço escolhido.
+   * 
+   * @param {Object} service - Objeto contendo id, name e price do serviço selecionado
+   */
   const handleBooking = (service) => {
     navigate('/', {
       state: {
@@ -41,6 +55,7 @@ const Services = () => {
       }
     });
   };
+
 
   return (
     <div className="min-h-screen bg-dark-950 text-white font-sans overflow-x-hidden selection:bg-gold selection:text-dark-950 pb-20">
