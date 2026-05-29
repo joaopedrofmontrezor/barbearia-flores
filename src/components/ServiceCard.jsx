@@ -5,6 +5,12 @@ import { Clock, ChevronRight, Edit3, Trash2 } from 'lucide-react';
 /**
  * ServiceCard - Componente de exibição de serviço com estilo premium da Barbearia Flores.
  * 
+ * Este componente encapsula a renderização de um serviço de forma responsiva e adaptável.
+ * Funcionalidade Híbrida:
+ * 1. Visualização Pública: Exibe o botão "Agendar" acionando a rota de marcação rápida.
+ * 2. Visualização Administrativa: Exibe botões de "Editar" e "Excluir" (com estilizações distintas)
+ *    para o painel de controle do gestor.
+ * 
  * @param {Object} props
  * @param {Object} props.service - Objeto contendo dados do serviço (name, price, description, duration, etc)
  * @param {Function} [props.onBook] - Callback executado ao clicar no botão de agendamento (modo público)
@@ -15,7 +21,8 @@ import { Clock, ChevronRight, Edit3, Trash2 } from 'lucide-react';
 const ServiceCard = ({ service, onBook, onEdit, onDelete, isAdmin = false }) => {
   const { name, price, description, duration, active } = service;
 
-  // Formata o preço do serviço para o padrão monetário BRL (Real)
+  // FORMATADOR MONETÁRIO INTERNACIONAL (BRL)
+  // Garante a formatação adequada de valores decimais em Real (R$) com vírgulas e pontos corretos
   const formattedPrice = new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL'
@@ -31,7 +38,8 @@ const ServiceCard = ({ service, onBook, onEdit, onDelete, isAdmin = false }) => 
         !active ? 'opacity-50 grayscale' : ''
       }`}
     >
-      {/* Detalhe Premium: Linha superior dourada brilhante visível no hover */}
+      {/* DETALHE ESTÉTICO PREMIUM
+          Uma linha de brilho dourado translúcido que varre horizontalmente o topo do card sob hover (efeito de luz metálica) */}
       <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-gold to-transparent transform -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
 
       <div>
@@ -59,7 +67,7 @@ const ServiceCard = ({ service, onBook, onEdit, onDelete, isAdmin = false }) => 
         </div>
 
         {isAdmin ? (
-          // Controles do Painel Administrativo
+          // --- CONTROLES DE SEGURANÇA E EDIÇÃO DO PAINEL ADMINISTRATIVO ---
           <div className="flex items-center gap-2">
             {onEdit && (
               <button
@@ -81,7 +89,7 @@ const ServiceCard = ({ service, onBook, onEdit, onDelete, isAdmin = false }) => 
             )}
           </div>
         ) : (
-          // Ação para o Usuário Final (Agendamento)
+          // --- AÇÃO PARA O USUÁRIO FINAL (AGENDAMENTO RÁPIDO) ---
           onBook && (
             <button
               onClick={() => onBook(service)}
@@ -98,3 +106,4 @@ const ServiceCard = ({ service, onBook, onEdit, onDelete, isAdmin = false }) => 
 };
 
 export default ServiceCard;
+
